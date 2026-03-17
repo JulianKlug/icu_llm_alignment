@@ -4,8 +4,10 @@
 ====================
 Analysis 1: Interrater agreement for preferred answer over all questions.
 
-This script calculates Fleiss' Kappa and other agreement metrics for the
-vote (preferred answer) across all raters and questions.
+This script calculates Fleiss' Kappa, Krippendorff's Alpha, and Gwet's AC1
+for the vote (preferred answer) across all raters and questions using irrCAC.
+
+Votes are remapped: 1 (First) -> -1, 2 (Second) -> +1, 12 (Both) -> 0
 
 Output:
 - output/tables/02_vote_agreement.csv
@@ -25,46 +27,95 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import seaborn as sns
+from irrCAC.raw import CAC
 
 from analyses.utils import (
-    load_data, reshape_for_agreement, fleiss_kappa, percent_agreement,
-    bootstrap_ci, setup_plotting, save_figure_variants, COLORS, PALETTE
+    load_data, setup_plotting, save_figure_variants, COLORS, PALETTE
 )
-from analyses.utils.stats import interpret_kappa
 
 OUTPUT_DIR = project_root / 'output'
 TABLES_DIR = OUTPUT_DIR / 'tables'
 FIGURES_DIR = OUTPUT_DIR / 'figures'
 
 
-def calculate_vote_agreement(df: pd.DataFrame) -> dict:
-    """Calculate interrater agreement metrics for vote."""
+def interpret_agreement(value: float) -> str:
+    """Interpret agreement coefficient using Landis & Koch's guidelines."""
+    if value < 0:
+        return "Poor"
+    elif value < 0.20:
+        return "Slight"
+    elif value < 0.40:
+        return "Fair"
+    elif value < 0.60:
+        return "Moderate"
+    elif value < 0.80:
+        return "Substantial"
+    else:
+        return "Almost Perfect"
 
-    # Reshape data: questions x raters
-    vote_matrix = reshape_for_agreement(df, 'Vote')
 
-    # Calculate Fleiss' Kappa
-    kappa = fleiss_kappa(vote_matrix)
+def create_vote_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create vote matrix with questions as rows and raters as columns.
+    Votes are remapped: 1 -> -1, 2 -> +1, 12 -> 0
+    """
+    df_copy = df.copy()
 
-    # Calculate percent agreement
-    pct_agree = percent_agreement(vote_matrix)
+    # Remap votes
+    df_copy['Vote'] = df_copy['Vote'].map({1: -1, 2: +1, 12: 0})
 
-    # Bootstrap CI for Kappa
-    def kappa_func(data):
-        return fleiss_kappa(data)
-
-    kappa_point, kappa_ci_lower, kappa_ci_upper = bootstrap_ci(
-        vote_matrix, kappa_func, n_bootstrap=1000
+    # Pivot: rows=questions, columns=raters, values=votes
+    vote_matrix = df_copy.pivot_table(
+        index='Question',
+        columns='Name',
+        values='Vote',
+        aggfunc='first'  # In case of duplicates
     )
 
+    return vote_matrix
+
+
+def calculate_agreement_metrics(vote_matrix: pd.DataFrame) -> dict:
+    """Calculate agreement metrics using irrCAC."""
+
+    cac = CAC(vote_matrix)
+
+    # Fleiss' Kappa
+    fleiss_result = cac.fleiss()
+    fleiss_est = fleiss_result['est']
+
+    # Krippendorff's Alpha
+    krippendorff_result = cac.krippendorff()
+    krippendorff_est = krippendorff_result['est']
+
+    # Gwet's AC1
+    gwet_result = cac.gwet()
+    gwet_est = gwet_result['est']
+
     return {
-        'fleiss_kappa': kappa,
-        'kappa_ci_lower': kappa_ci_lower,
-        'kappa_ci_upper': kappa_ci_upper,
-        'percent_agreement': pct_agree,
-        'interpretation': interpret_kappa(kappa),
+        'fleiss_kappa': fleiss_est['coefficient_value'],
+        'fleiss_ci_lower': fleiss_est['confidence_interval'][0],
+        'fleiss_ci_upper': fleiss_est['confidence_interval'][1],
+        'fleiss_p_value': fleiss_est['p_value'],
+        'fleiss_se': fleiss_est['se'],
+        'fleiss_pa': fleiss_est['pa'],
+        'fleiss_pe': fleiss_est['pe'],
+
+        'krippendorff_alpha': krippendorff_est['coefficient_value'],
+        'krippendorff_ci_lower': krippendorff_est['confidence_interval'][0],
+        'krippendorff_ci_upper': krippendorff_est['confidence_interval'][1],
+        'krippendorff_p_value': krippendorff_est['p_value'],
+        'krippendorff_se': krippendorff_est['se'],
+
+        'gwet_ac1': gwet_est['coefficient_value'],
+        'gwet_ci_lower': gwet_est['confidence_interval'][0],
+        'gwet_ci_upper': gwet_est['confidence_interval'][1],
+        'gwet_p_value': gwet_est['p_value'],
+        'gwet_se': gwet_est['se'],
+
         'n_questions': vote_matrix.shape[0],
         'n_raters': vote_matrix.shape[1],
+        'categories': fleiss_result['categories'],
         'vote_matrix': vote_matrix
     }
 
@@ -210,51 +261,78 @@ def create_figure_v3_vote_distribution(df: pd.DataFrame) -> plt.Figure:
 
 
 def create_figure_v4_agreement_summary(results: dict, rater_stats: pd.DataFrame) -> plt.Figure:
-    """Create summary figure with Kappa and key metrics."""
+    """Create summary figure with all agreement metrics."""
     setup_plotting()
 
-    fig = plt.figure(figsize=(14, 8))
+    fig = plt.figure(figsize=(14, 10))
 
     # Create grid
-    gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
+    gs = fig.add_gridspec(3, 2, hspace=0.4, wspace=0.3)
 
-    # Kappa gauge (top left)
+    # Agreement coefficients comparison (top left)
     ax1 = fig.add_subplot(gs[0, 0])
-    kappa = results['fleiss_kappa']
-    ci_lower = results['kappa_ci_lower']
-    ci_upper = results['kappa_ci_upper']
 
-    # Kappa bar
-    ax1.barh(['Fleiss\' Kappa'], [kappa], color=COLORS['primary'], alpha=0.8, height=0.4)
-    ax1.errorbar([kappa], ['Fleiss\' Kappa'],
-                 xerr=[[kappa - ci_lower], [ci_upper - kappa]],
+    metrics = ['Fleiss\' Kappa', 'Krippendorff\'s Alpha', 'Gwet\'s AC1']
+    values = [results['fleiss_kappa'], results['krippendorff_alpha'], results['gwet_ac1']]
+    errors_lower = [
+        results['fleiss_kappa'] - results['fleiss_ci_lower'],
+        results['krippendorff_alpha'] - results['krippendorff_ci_lower'],
+        results['gwet_ac1'] - results['gwet_ci_lower']
+    ]
+    errors_upper = [
+        results['fleiss_ci_upper'] - results['fleiss_kappa'],
+        results['krippendorff_ci_upper'] - results['krippendorff_alpha'],
+        results['gwet_ci_upper'] - results['gwet_ac1']
+    ]
+
+    y_pos = np.arange(len(metrics))
+    colors_bar = [COLORS['primary'], COLORS['secondary'], COLORS['success']]
+
+    bars = ax1.barh(y_pos, values, color=colors_bar, alpha=0.8, height=0.5)
+    ax1.errorbar(values, y_pos, xerr=[errors_lower, errors_upper],
                  fmt='none', color='black', capsize=5)
+
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(metrics)
     ax1.axvline(x=0, color=COLORS['neutral'], linestyle='-', alpha=0.3)
-    ax1.axvline(x=0.4, color=COLORS['tertiary'], linestyle='--', alpha=0.5, label='Fair/Moderate')
-    ax1.axvline(x=0.6, color=COLORS['success'], linestyle='--', alpha=0.5, label='Substantial')
-    ax1.set_xlim(-0.1, 1)
-    ax1.set_xlabel('Kappa Value')
-    ax1.set_title(f'Fleiss\' Kappa: {kappa:.3f} (95% CI: {ci_lower:.3f}-{ci_upper:.3f})\n{results["interpretation"]} Agreement')
-    ax1.legend(loc='lower right', fontsize=8)
+    ax1.axvline(x=0.4, color=COLORS['tertiary'], linestyle='--', alpha=0.5)
+    ax1.axvline(x=0.6, color=COLORS['success'], linestyle='--', alpha=0.5)
+    ax1.set_xlim(-0.1, 0.8)
+    ax1.set_xlabel('Coefficient Value')
+    ax1.set_title('Agreement Coefficients Comparison')
+
+    # Add value labels
+    for bar, val in zip(bars, values):
+        ax1.text(val + 0.02, bar.get_y() + bar.get_height()/2,
+                 f'{val:.3f}', ha='left', va='center', fontsize=10)
 
     # Metrics table (top right)
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.axis('off')
 
     table_data = [
-        ['Metric', 'Value'],
-        ['Fleiss\' Kappa', f'{kappa:.3f}'],
-        ['95% CI', f'{ci_lower:.3f} - {ci_upper:.3f}'],
-        ['Interpretation', results['interpretation']],
-        ['Percent Agreement', f'{results["percent_agreement"]*100:.1f}%'],
-        ['N Questions', str(results['n_questions'])],
-        ['N Raters', str(results['n_raters'])],
+        ['Metric', 'Value', '95% CI', 'p-value', 'Interpretation'],
+        ['Fleiss\' Kappa',
+         f'{results["fleiss_kappa"]:.3f}',
+         f'({results["fleiss_ci_lower"]:.3f}, {results["fleiss_ci_upper"]:.3f})',
+         f'{results["fleiss_p_value"]:.2e}',
+         interpret_agreement(results["fleiss_kappa"])],
+        ['Krippendorff\'s α',
+         f'{results["krippendorff_alpha"]:.3f}',
+         f'({results["krippendorff_ci_lower"]:.3f}, {results["krippendorff_ci_upper"]:.3f})',
+         f'{results["krippendorff_p_value"]:.2e}',
+         interpret_agreement(results["krippendorff_alpha"])],
+        ['Gwet\'s AC1',
+         f'{results["gwet_ac1"]:.3f}',
+         f'({results["gwet_ci_lower"]:.3f}, {results["gwet_ci_upper"]:.3f})',
+         f'{results["gwet_p_value"]:.2e}',
+         interpret_agreement(results["gwet_ac1"])],
     ]
 
-    table = ax2.table(cellText=table_data, loc='center', cellLoc='left',
-                      colWidths=[0.4, 0.4])
+    table = ax2.table(cellText=table_data, loc='center', cellLoc='center',
+                      colWidths=[0.22, 0.12, 0.22, 0.16, 0.18])
     table.auto_set_font_size(False)
-    table.set_fontsize(11)
+    table.set_fontsize(9)
     table.scale(1.2, 1.8)
 
     # Style header
@@ -263,20 +341,67 @@ def create_figure_v4_agreement_summary(results: dict, rater_stats: pd.DataFrame)
             cell.set_text_props(fontweight='bold')
             cell.set_facecolor(COLORS['light'])
 
-    ax2.set_title('Agreement Summary', pad=20)
+    ax2.set_title('Agreement Metrics Summary', pad=20)
+
+    # Interpretation guide (middle left)
+    ax3 = fig.add_subplot(gs[1, 0])
+    ax3.axis('off')
+
+    guide_data = [
+        ['Range', 'Interpretation'],
+        ['< 0.00', 'Poor'],
+        ['0.00 - 0.20', 'Slight'],
+        ['0.21 - 0.40', 'Fair'],
+        ['0.41 - 0.60', 'Moderate'],
+        ['0.61 - 0.80', 'Substantial'],
+        ['0.81 - 1.00', 'Almost Perfect'],
+    ]
+
+    guide_table = ax3.table(cellText=guide_data, loc='center', cellLoc='center',
+                            colWidths=[0.3, 0.3])
+    guide_table.auto_set_font_size(False)
+    guide_table.set_fontsize(10)
+    guide_table.scale(1.2, 1.5)
+
+    for (row, col), cell in guide_table.get_celld().items():
+        if row == 0:
+            cell.set_text_props(fontweight='bold')
+            cell.set_facecolor(COLORS['light'])
+
+    ax3.set_title('Landis & Koch Interpretation Guide', pad=20)
+
+    # Study info (middle right)
+    ax4 = fig.add_subplot(gs[1, 1])
+    ax4.axis('off')
+
+    info_text = f"""Study Information:
+
+    • N Questions: {results['n_questions']}
+    • N Raters: {results['n_raters']}
+    • Vote Categories: {results['categories']}
+      (-1 = First, 0 = Both, +1 = Second)
+
+    • Observed Agreement (Pa): {results['fleiss_pa']:.3f}
+    • Expected Agreement (Pe): {results['fleiss_pe']:.3f}
+    """
+
+    ax4.text(0.1, 0.5, info_text, transform=ax4.transAxes, fontsize=11,
+             verticalalignment='center', fontfamily='monospace',
+             bbox=dict(boxstyle='round', facecolor=COLORS['light'], alpha=0.5))
+    ax4.set_title('Study Details', pad=20)
 
     # Rater coverage (bottom)
-    ax3 = fig.add_subplot(gs[1, :])
+    ax5 = fig.add_subplot(gs[2, :])
     x = np.arange(len(rater_stats))
-    bars = ax3.bar(x, rater_stats['n_ratings'].values, color=PALETTE[:len(rater_stats)], alpha=0.8)
-    ax3.set_xticks(x)
-    ax3.set_xticklabels(rater_stats['rater'].values, rotation=45, ha='right')
-    ax3.set_ylabel('Number of Ratings')
-    ax3.set_xlabel('Rater')
-    ax3.set_title('Ratings per Rater')
+    bars = ax5.bar(x, rater_stats['n_ratings'].values, color=PALETTE[:len(rater_stats)], alpha=0.8)
+    ax5.set_xticks(x)
+    ax5.set_xticklabels(rater_stats['rater'].values, rotation=45, ha='right')
+    ax5.set_ylabel('Number of Ratings')
+    ax5.set_xlabel('Rater')
+    ax5.set_title('Ratings per Rater')
 
     for bar, val in zip(bars, rater_stats['n_ratings'].values):
-        ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+        ax5.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                  str(val), ha='center', va='bottom', fontsize=9)
 
     plt.tight_layout()
@@ -300,47 +425,80 @@ def main():
     df = load_data()
     print(f"   Loaded {len(df)} ratings from {df['Name'].nunique()} raters")
 
-    # Calculate agreement
-    print("\n2. Calculating Fleiss' Kappa...")
-    results = calculate_vote_agreement(df)
-    print(f"   Fleiss' Kappa: {results['fleiss_kappa']:.3f}")
-    print(f"   95% CI: [{results['kappa_ci_lower']:.3f}, {results['kappa_ci_upper']:.3f}]")
-    print(f"   Interpretation: {results['interpretation']}")
-    print(f"   Percent Agreement: {results['percent_agreement']*100:.1f}%")
+    # Create vote matrix
+    print("\n2. Creating vote matrix...")
+    vote_matrix = create_vote_matrix(df)
+    print(f"   Matrix shape: {vote_matrix.shape[0]} questions × {vote_matrix.shape[1]} raters")
+
+    # Calculate agreement metrics using irrCAC
+    print("\n3. Calculating agreement metrics (irrCAC)...")
+    results = calculate_agreement_metrics(vote_matrix)
+
+    print(f"\n   Fleiss' Kappa: {results['fleiss_kappa']:.3f}")
+    print(f"     95% CI: ({results['fleiss_ci_lower']:.3f}, {results['fleiss_ci_upper']:.3f})")
+    print(f"     p-value: {results['fleiss_p_value']:.2e}")
+    print(f"     Interpretation: {interpret_agreement(results['fleiss_kappa'])}")
+
+    print(f"\n   Krippendorff's Alpha: {results['krippendorff_alpha']:.3f}")
+    print(f"     95% CI: ({results['krippendorff_ci_lower']:.3f}, {results['krippendorff_ci_upper']:.3f})")
+    print(f"     p-value: {results['krippendorff_p_value']:.2e}")
+    print(f"     Interpretation: {interpret_agreement(results['krippendorff_alpha'])}")
+
+    print(f"\n   Gwet's AC1: {results['gwet_ac1']:.3f}")
+    print(f"     95% CI: ({results['gwet_ci_lower']:.3f}, {results['gwet_ci_upper']:.3f})")
+    print(f"     p-value: {results['gwet_p_value']:.2e}")
+    print(f"     Interpretation: {interpret_agreement(results['gwet_ac1'])}")
 
     # Pairwise agreement
-    print("\n3. Calculating pairwise agreement...")
-    pairwise_df = calculate_pairwise_agreement(results['vote_matrix'])
+    print("\n4. Calculating pairwise agreement...")
+    pairwise_df = calculate_pairwise_agreement(vote_matrix)
 
     # Rater statistics
-    print("\n4. Calculating per-rater statistics...")
+    print("\n5. Calculating per-rater statistics...")
     rater_stats = calculate_rater_stats(df)
 
     # Save tables
-    print("\n5. Saving tables...")
+    print("\n6. Saving tables...")
 
     # Main results table
-    results_df = pd.DataFrame([{
-        'metric': 'Fleiss\' Kappa',
-        'value': results['fleiss_kappa'],
-        'ci_lower': results['kappa_ci_lower'],
-        'ci_upper': results['kappa_ci_upper'],
-        'interpretation': results['interpretation']
-    }, {
-        'metric': 'Percent Agreement',
-        'value': results['percent_agreement'],
-        'ci_lower': np.nan,
-        'ci_upper': np.nan,
-        'interpretation': ''
-    }])
+    results_df = pd.DataFrame([
+        {
+            'metric': "Fleiss' Kappa",
+            'value': results['fleiss_kappa'],
+            'ci_lower': results['fleiss_ci_lower'],
+            'ci_upper': results['fleiss_ci_upper'],
+            'p_value': results['fleiss_p_value'],
+            'se': results['fleiss_se'],
+            'interpretation': interpret_agreement(results['fleiss_kappa'])
+        },
+        {
+            'metric': "Krippendorff's Alpha",
+            'value': results['krippendorff_alpha'],
+            'ci_lower': results['krippendorff_ci_lower'],
+            'ci_upper': results['krippendorff_ci_upper'],
+            'p_value': results['krippendorff_p_value'],
+            'se': results['krippendorff_se'],
+            'interpretation': interpret_agreement(results['krippendorff_alpha'])
+        },
+        {
+            'metric': "Gwet's AC1",
+            'value': results['gwet_ac1'],
+            'ci_lower': results['gwet_ci_lower'],
+            'ci_upper': results['gwet_ci_upper'],
+            'p_value': results['gwet_p_value'],
+            'se': results['gwet_se'],
+            'interpretation': interpret_agreement(results['gwet_ac1'])
+        }
+    ])
 
     results_df.to_csv(TABLES_DIR / '02_vote_agreement.csv', index=False)
     pairwise_df.to_csv(TABLES_DIR / '02_vote_agreement_pairwise.csv')
     rater_stats.to_csv(TABLES_DIR / '02_vote_agreement_raters.csv', index=False)
+    vote_matrix.to_csv(TABLES_DIR / '02_vote_agreement_matrix.csv')
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n6. Creating figures...")
+    print("\n7. Creating figures...")
 
     fig1 = create_figure_v1_heatmap(pairwise_df)
     save_figure_variants(fig1, '02_vote_agreement', FIGURES_DIR, 1)
@@ -363,7 +521,9 @@ def main():
     print("Analysis complete!")
     print("=" * 60)
     print(f"\nKey findings:")
-    print(f"  - Fleiss' Kappa: {results['fleiss_kappa']:.3f} ({results['interpretation']})")
+    print(f"  - Fleiss' Kappa: {results['fleiss_kappa']:.3f} ({interpret_agreement(results['fleiss_kappa'])})")
+    print(f"  - Krippendorff's Alpha: {results['krippendorff_alpha']:.3f} ({interpret_agreement(results['krippendorff_alpha'])})")
+    print(f"  - Gwet's AC1: {results['gwet_ac1']:.3f} ({interpret_agreement(results['gwet_ac1'])})")
     print(f"  - {results['n_questions']} questions rated by {results['n_raters']} raters")
 
 
