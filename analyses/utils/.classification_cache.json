@@ -1,0 +1,1232 @@
+{
+  "061e5ad5b69361a55bfa86c7d6ad733b6f3f3fa2879e41f5376ad1d81257d503": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "What is the most likely diagnosis for a patient presenting with acute onset dyspnea, hypoxemia, and "
+  },
+  "08efc5aa81876a271fc7a307fa0f40dcd8387bf0ee354d77bfb795226450177b": {
+    "task_type": "Prognosis",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "What is the expected mortality rate for a patient with septic shock requiring three vasopressors?"
+  },
+  "1c5b69a6deaae7671e0ef035b0fdd150326ab745651e55ae105c7be4ffcf489d": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "What antibiotic regimen should be started for suspected ventilator-associated pneumonia?"
+  },
+  "554a2eb04aab7bf410f3519416177b8d77864083a21e8cdd2b16ff07d1d85859": {
+    "task_type": "Knowledge",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "Explain the pathophysiology of acute respiratory distress syndrome (ARDS)."
+  },
+  "efadbf6453367e4dcc2f0c6c82390eb49f07c321cdc94c2558acb577120e3ad5": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "A 65-year-old patient develops ST-elevation in leads II, III, and aVF. What is the next step in mana"
+  },
+  "33702c16acd9731fe7ad822ae429750478ae6173e0f6c709762ed428a1f2b447": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. Fol"
+  },
+  "10c0f1bea71bd13bb261fdaf35ac0cd59a311d090c0711a93ed97dc5a13231d0": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI am an intensive care specialist in a tertiary centre in Switzerland. \nI am in charge of a 19-year"
+  },
+  "050b598cbb0704752d54acdb469317af0d5ebfe67262b4046afa08dd0135d0ee": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 65 ye"
+  },
+  "c4d57319131f4d799f52111f99b1597e61f65bec9234bf82fe31e3e61f3f7bfc": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 47-year-old m"
+  },
+  "a93085f2353c6c3e0df77d5529d2c23b5aed80ef6a037f71ba5f72555fb961f4": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "41a856fbf94d765789dc1b66bc950a8e13d49c64ca07cd102d9b72c98d59a808": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 69 year-old m"
+  },
+  "8aeae95bcde0143f57722400fa64700d4c7375590b2a70236e1c86c14cbe9bcb": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. \nI am in charge of a 75 y"
+  },
+  "8f3ef97dce4b226f1c041114e4d5ac5a377e57c86948db15dfa2274bd030a77b": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "3a38a5b18cb7396d7bdbbf44e3cb8dd0a64b01e1dc33116eebeb9653ff5d7916": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. An 1"
+  },
+  "6d1586cc0093f10eccd1749a307285f109364dbddbc9d0a1225c30c2eb8d6430": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 34 ye"
+  },
+  "9e36ffe55aa3dfd4cb9db204bcb6f78567ad2443ca5324dc83b79695e19990b6": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm i"
+  },
+  "43d33a25bad13f2d7f663b8819486d5c70f2d3ce3ff25f48a439ce811d775191": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm t"
+  },
+  "0cbce239bb68900d7bea20aa54d70936a4621857edfdc1ebff66332d419a4666": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. How m"
+  },
+  "50e26740cf30441be64b3db2a15cbc0ea8c548b69a65c85a9bb57c9097c77bf3": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 34 ye"
+  },
+  "96600535fb60f0cb213408a6f8cf00ef9992fb867f8991e6036d9a8e78fbc8d9": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "973be44e9cc93b530b0e3a7dbf1a82c1ac8ae65625ae91f9a1324ab0a4e3ccc2": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c56cd2771b88e5e01746260f69b861184674dade312164770174fe4a384669ab": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": " I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Plea"
+  },
+  "56654bf1170a5f3555175aebe247979e60dfdf246fc416da1af6cb4d683096b1": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": " I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Plea"
+  },
+  "bde9ac0165a207d4f7be187cc01fcb70d34b88342ea09074068121ee7efc3b5f": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm i"
+  },
+  "0f067eed912a52ae19adf5b93378e162ce1bffa8e852a39c577826790ffc2929": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "535e63485b8235005e8539c3dd92415ec3b38470db53676f7af2756e8f9c50de": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Brief"
+  },
+  "f235440e3c278735531cb437a94417601da007f23f3ca432b0d136725b3a0060": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "504980fd5bcb5096256fefb6116f9e38f711599e9dc500efae6701441e4aef3b": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Brief"
+  },
+  "b66560a16886caf84ce02bb9460225a6ab3634b91d4e134bd7fd9a454dbbcbf1": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "12a674502aab753131fb37649741b243794d6891407d426650ba410fec4e7acc": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. An 50"
+  },
+  "8dacefdca0f7c144570c9b57a2ed1811033de3a37ada09535838160a08018640": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "092ed0a97285e14222c7b0df2ad02f3d769135cff45129e663d164b1de1131d6": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 27 "
+  },
+  "6316e09aeb934cb86a3cfbe6f951caa2a1cc8d31145da966203e05953cac6571": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm i"
+  },
+  "c7faebef448727681699c4cdcaab323a462f656233225c6f615a1b912db2121b": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "cea4f3c1ce51551870f15093287b0b10a09158f37f5694dba7b364ea6b9873b4": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI am concerned "
+  },
+  "a7102af76dfd52eb037f8183a920c2e16d3a72d8778dd45bffcb9bc5a332b7c9": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI'm in charge o"
+  },
+  "05689c32fd36804f8fbc42628d559398aaa183d400518d932240b5fc65da99b9": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "56ebad1b9694be44346fb74b2396b74ca9a44210e0935b5bcea698d0e7b1b1c2": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm i"
+  },
+  "67ffd69e7e25570a52dc3afd92e2d897b842d5f490ece50da15ca1ec8e34caba": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. \nI am in charge of a 85 y"
+  },
+  "ccc76b5a52bc714bcc92c0cec895708cc128744cfbf94686c2be6723fd2d7b28": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "5572a665ba384402c2b6eea76cec04d737e5541b70df745d9ae15b8b3fd83ce5": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "b2cbaf37db93b3587c1211f3606ada84234d69878a2cafa37438f0df0e3cff23": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "79afb032c60e7875d3cf7476a936db6b0c834740e99d3a8b64e66cf6a3dfa324": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm a"
+  },
+  "aab416b5b4234fdbe1361a005d2e4e45f04d10f29d2ba3023058e288c66d38e1": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "9cf3955fc73defc53c1f4768066364fb65b1bd8fc7e7737c6945d45eb320a855": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "f4e7001b5a6f82f5b477261917aafac2731b56e1bb044c120f14d87e1bd7ac58": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 67-year-old m"
+  },
+  "a65a21787b84c18d321d4f1e57c7032404f4381d55b0a92d6b3c92e84a463654": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "9cb087d8097d163029a5c287901dc3048b8ca64b4d54ea888a224e6e5ec4d12f": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "f206ba4c6fb466c840d63b5d32cb891bbbb7453c05c80d8201d80136469cffda": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I'm taking care of a 50 y"
+  },
+  "9cc8a1aa9681a429b7a1b86844b5c253541239917f41335318e009e553d8ee94": {
+    "task_type": "Prognosis",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "2e5e365b80539ead925c463d72495593d17e7d6391d2b8fef8ae3dae90659bbe": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.  Plea"
+  },
+  "7a889b477ccb9743aa5d6d405add2c9ba79ec91f1a1189306205203a7b5a1927": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. \nI am in charge of a 34 y"
+  },
+  "67985dd0eb6ab4e2ab29f37f20f5e9e60e0b771b9d1b698c69418167b382917e": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 27 "
+  },
+  "157d89b798649d6b4416ead9bff43fdf803f5b1ed006715a7dc8b783fb651ca1": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "90490d35d0459115b2f9b4a9aa2d51bbe8b87c227052ee00f3dfbf839d29b4ad": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I nee"
+  },
+  "96bd10354af5d76acddc4cc164d74529a31c94d277094e140143eea7b18b4978": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 65 ye"
+  },
+  "76d7330c9e8d1f20b75ccc6fe6bff0071d965cfee988e61ce21fd77e2a255726": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "495cd6a067569ac22f362a9db57cfc7f22e95cfc73e1ca59f657452392663a6a": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 24 ye"
+  },
+  "6cd9cffb500609260c64a744ebb8f779f718b687415d992a9b266583a4a708db": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 27 "
+  },
+  "b16fabc5dc882dd934abfb651f222bb0e7bf6e0303bff9ef5dab0a98599067d6": {
+    "task_type": "Prognosis",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "099b0837382b292686fc04bfa7f54b1e5a37ad221efa8717176040a05f9cccf9": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 23"
+  },
+  "aa9778f07044ff01e061507c17c8b6692938b6219be6b700c7e9f46441ef45ed": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a universitary centre in Switzerland. I am in charge of a 45-ye"
+  },
+  "60ae9845069f6465fa0d42da15e37852aad7f35dd989d109855ea7d77fa95628": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "6e8c949c6ccd39332079e88ddada0dcf39d1fee12b35bea3403d3ede23564b84": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "e9054df9e3d818ad8b2e9026c76628f4d8b69e81e8311bc55789c46620a5c90d": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. An 1"
+  },
+  "3d8b52bce2448448a803ed1e4817328fb427842d1e5e2fb45405ceeb90c3d03a": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "c7266880870587b681aff71885f4307488cde9d4c07b7b011c7d80719b6477bd": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "08db512413becc13dc7b6c74d73ec2026cba47ba361d38d08c12bd063ecbebaf": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nHere"
+  },
+  "595c27707e6d29d1d9b4afecbfe9b4e62b64e4abb7686f20c24577641628e457": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. A 44"
+  },
+  "ff3fd9d35ea9efb1cf1519ac6017290508fc1594dabd2a6116022ee2d09f652b": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "ef2770aaa80cd53b720abfea676d0c6029dfff808f99e2948ddd704a8c8adf64": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Which"
+  },
+  "6820a6054b94e6c7381ee79ed40b684111f0561e1952deb72a3456b41a202a8c": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 92-"
+  },
+  "2687c175854b91a1e48f14765f16b1ea6a4f7bee836b0a13eebb13c082961712": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 92-"
+  },
+  "c0079f2903f3da2cfff01dafa21019ccf42871977f47e4aea1fcb5ce1fe9b8ac": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "0eb9f39e629dd99e962166644e2b395cfe5aa70f82544c28fb8d77ef7ee4ff62": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c9920e3e8041bf0f8dd23713c683fc5bf382494f2ec58106ef5a5bb769ecff81": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 25 "
+  },
+  "76a13874c354eb97e5e30d4fb65eaf05eed8f943c3e5312f7129abd2a91c7c9c": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "5efe87405e061ca5f9c13da555bffe3d4874d4ae91a6ea5e210dfc6a3b66cedf": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Based"
+  },
+  "cf9772fbdf67b192195bab068673ae23a04a2b34dd8286e2143775bc62bd73f8": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "751e386e6b5652102011929ea055689b45794e4315c0c26ce35664dcc1277d41": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "a3a2e20a10ce206df8cbe06f29df164812502bf295624823b2214b631a4d0daf": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "d0d813e473fc7cb80ac50f0a40c28a3fbaab37ecdbfc76ed118eff156b0b2598": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "83f7fe2013a2ea699f025e6da8cc80ac79fe1217e138f70bc9c25bf65586f2dc": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "96605cecda69016cb9f5c19043c4c23d8fbb4d4b3cf1dac44f95d0fcdff67150": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "24e78ffe767684af83fdb605180202881cd2481f5966bfba23ffa73b97445793": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "fabfce67e34d1ed231980b2a1d87d079d902b6862cdf4dbc94b082fee54a1246": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "cb3902a23a45702581b0cdbc98b11263b009cdb680e5dc9919dc9fcedb50780c": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland, in charge of a 62-year-old ma"
+  },
+  "1ea45c903a1ab4ca9502da16e30d4874109308268b03dc832669fc5c31192a23": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "5ef9856a9847ae14d289ea89b49ae68b825d73eaef8a7e8c8b01c12aa59a546f": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I a"
+  },
+  "dc6d12a8701a84470b7a665fcff8441e5d170c697a72d1007636b4f74fd00677": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "b41ba61a20fe0c504803f1fdcaaabd65eb62fb28ce6795d81ba33409867a3b14": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 35 "
+  },
+  "ec94ec3047deda9c1f6edde7b33e64494d0aa844fef217c721f2832bce6f9350": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m taking ca"
+  },
+  "43f18d781e153a54f450f5548b6aa04af5988a6e8bbf882bc231db708f6233b0": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "dae14e32f412a963109d94794e2f3e129cdbbf212b0e84f5eced01f359bf64ec": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "cea2ef30950e8781316787f784158dfc71d917fa739977ed7339b9a140f81e90": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I a"
+  },
+  "ec538af72b9951098daa627f6bcbcbbf9beb9bd02b79f5ca438b20013f4c7777": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I'm i"
+  },
+  "6385e03347239e91d94589bd826a583a576bc94c5f2a52b9914aaa960d4e3e7d": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "694add17fac4aad35cc6c66e88345b2ff694dff05fbcf896ae8a2bfdbe916aac": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "e094caae854b425f359b82e0ae8612047f1988408b0014ce99c39b6add081ba8": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A pat"
+  },
+  "4a4e7c8049b9b93c0f1cf18bf3f1199f666dda1f5faef39767eb7a735caf751e": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "9de46e95cb01fd8ca76d5cef33adfe6587f4a4ae97d22597865a29f89fe1492c": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "2ed977b9fa60fa4c264cae60d3ffd26acdd6ecd059ebf21b31ef904cb6166645": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "dce321873ac1e700568c55c96581cbe5ccf3449544cc122150d65444f243f9a3": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nWhat"
+  },
+  "4576094603131dd05d7c6df414baa61233d3b8105f4ef1a1b40551e32d97d84e": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "5b2dcb0f552d0d788df8072b96138df9b864e18bcdf896f1c95a40ef9438cbad": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. Wha"
+  },
+  "49d0a4b9c6c86c1cdc56e71b4c16e70c46b831caeb9614f805c71b467a1de81b": {
+    "task_type": "Other",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Here "
+  },
+  "89398c75c4b2096382649f20b97a95f39e4dbbfca4d98e24f803a9be75a6ff23": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "e1f5ae2c849543db142cabee7d5df7bb1668bf4cf4635b221b25ad25c51beec9": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "4812c3dedf604dc3479a3e3e4d8f2661ed4afac5762fc6157352bc4022a3db40": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. A 25"
+  },
+  "a6b62d28d2cbac03aa0d78241e49a6fea299e44489c124994cb75be4fa4c53f6": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. An 18"
+  },
+  "6cda520a757d09edfeb05ee97921d64f21cc800cfb7ead60e5671813ee9f02d0": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "1fff5e66f61d2e1a66f8f39879c4e081e064cf020ff44199cc352f78f6420dbe": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "b089f7c30178c154f7dcf4e64ad64a2153f2e46a657b47ebfdafc7e12dd0e107": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "c0c37c22feffe244237d7c6f69e83156295a7b964b40297fdc20e91560382619": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "8872bd425aa5187221f3eb5355fdd46d35a34aaad95771c0d92226039047ac2e": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nWhat"
+  },
+  "5ca6e661c6128cefe14199bf54a0358cfc2c06c30676fba7b89faace1844a264": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I a"
+  },
+  "26c421f59a6864a4bf0ae9ccc9b45ddfd5a2654d18277be53fd33922c8231c9b": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "5cc37b3fd9aa9b69abe2d458e1132e25bc888b71877587d1649b45200793413a": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI of"
+  },
+  "93cf7b6c415b1b9fa85ff2dd027cccacd76ac54229d00e22026879f764cb8bcc": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "96559f874194439660699d7766128c56ffc1191ee5e8db07bda2905ffe11c0d2": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "f0670b16660bacd08665d5bc773286ed2c9f1c118d1d776da4ef88b4cecf45dd": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "0728664af461f5e25390c22eba38934eb870743dd675906404da7de8862bc75c": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "Please give me a brief answer\n\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university"
+  },
+  "3bd9a201f313b78c6df6d8b416d85c6101c0577e1bc2ab6df3a93e97b608fa17": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "b60113ef392166936f05ce6e53f1853350f533a9be30b3e593c77ab58e59c605": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "313b5b692a25c529ba96faaa593ac219376d1301b4666906be1a51bb2c2eb1ab": {
+    "task_type": "Knowledge",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "6b7ac1e350aaf800917a047130fb1c975bb96d9bf83009bf8a522e427f7b0528": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "f992c563da953a82a0a6e20d58afccabfb5e9fc9b56a1252ff8da561bfe39583": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. Pleas"
+  },
+  "87a27d1aa9a65b59cd01a8443a1ca1d206c475c30dad4516f1a72f876e23db11": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nThe pre-hospita"
+  },
+  "20ea755cf76e0f9841cd1210b398b1d1c434c973a2261f890db741c7242dbeda": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "0199a7be48eee8bd9d95e0a8597751b8f4073e92eb2dad00f4fb80f1a22e5028": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI am in charge "
+  },
+  "a3e8819f66bd38dc91b2019d19fbc863c50c310e9c1809a474715c50cd28b9b8": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist, working in a tertiary centre in Switzerland. I am in charge of a "
+  },
+  "271db9cc84c10701419518032a0176ecdb5ccbb2aba82b345212fb6d6a05e19c": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I ha"
+  },
+  "4a2b901e9c7e919986f39dd97be80d571b3af838164923fa2ce6f5d5d2f0c5bb": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "450d4dc6ecd6b29e423d8481e95433e627fbff84cc81046cb25aca96973e5ca4": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI am in charge "
+  },
+  "a012df92bed64aeaa808812620f0a077f1271925f56fbffae4e4f9035e583ed0": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c5986979381022f6ee5bf6860399e8f8f8acf47c23c95229dd6e3dc9cf219ed5": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "8ea7badaeaa29dc82a85e67299e30772c204dbd87ed134679945518740ea1014": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "bbe692bae96c805fd67e736bf47a9410f5567533f481c21383a9e0fc403d8263": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI am in charge "
+  },
+  "531a17d56f6b8abf814ec7c472ae611aeba35790ec382d438e7f5ac1a5a24ec4": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "bde4d7ef7786ce95eefa515e84902c2251c39bec125d3967394985cd796f9e7c": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "6f3bd0a0f9bfdc505e0783a12e267180d9ba1a36405a52e694f301c680a81560": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "8aeced510d2633506802d3710086661489b5f79125f7b245c0d9b7faa13367e2": {
+    "task_type": "Knowledge",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.  Plea"
+  },
+  "e386f285590b0975859da7c956a87aeb78ea6d6b5b396040e63e66ba958b8a4f": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "d49b78ecd9a9e6389812794e53db01182ba256302ace52cdeaa6a063d0793e63": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "e8ab890dea94976cda4a727f792ef785980584ab779a2f7acf9370323ad0ba00": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "ea146c9c62c09b5228c39c77666c4922c413ce8f26728c27fdb3fa34fdb3eb94": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "4230d2a39c52f65a38034475248b8ae306d15e63c18dfba8b6d910996488a8e2": {
+    "task_type": "Knowledge",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. A 44"
+  },
+  "46f24e0da5a548d87be01d8f763098554914d7a73d2e6938017eec4ff62a7236": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "95faeb6d2ed1fc8d9c837bc250e890142bbe71f240bfd7e5fac7ade0ad5e49ec": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "86c96b1864354b9a49a91c51afb775381b8a13eff601708a0b1da1252f572097": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c8d0af430ad2fa07838e6b51e9229b070ca387a146ca0f9400c82af67cdebb95": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "241ee4f3721c669551f28f6e08735da9537949e24e50c365f8969f009b7a3ce1": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm"
+  },
+  "c75d0ec0caeef21327d1c8d6f81838cf0ee56266c8dcc2ee9b3057159627c4be": {
+    "task_type": "Knowledge",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nShow"
+  },
+  "2950368b8dcfd0ea54339eb2d8e73a0090828879efec5644a536f819f0db5972": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 25-"
+  },
+  "5ebf4429e974253ea747ff8abb2a595fc8fa547c46e90518058567d3e95ea218": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I a"
+  },
+  "dbce0560d9742eda1c685281853a4e60bda5a262dbc86935c8ab99fe947242dd": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "8816660d9ddb5ff9c707125d791bad7edf85c53fffea622d884c2ea8847f8d25": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "171b138492e0e2f863ed5f126c061ee820bde7ee47cc2adff137946891666d8e": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. A 25-"
+  },
+  "0922345ea2adba935d449e4a88ed7f24b4893a5043b4637fa7b1ca79c3e0344a": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist, working in a universitary hospital in Switzerland. \nI've just adm"
+  },
+  "8c160185ea09c584344041ace84d76a5b1ad05b1dc628ea98098a0fa49dce86b": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland. I am managing a "
+  },
+  "2640f35d073ebaf7f4d584dd0b93c596ba9a88e1cfd5d7c1ec17c7c58da5b9ff": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "023cd745df7251ecdbec48aff9e3b440e89ff5b7dfb838a4faeba41c6f92a118": {
+    "task_type": "Knowledge",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI of"
+  },
+  "66f3236199564e4ad5da140878ddb0e7b138dd1ca20a37855b340310efc0e990": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. An "
+  },
+  "ba0321a8c35cc777edad7eb74811dcd111540e701d8511c269c346506a4b24b9": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "7c2f0afefd99f76d8f8ee7990c1bcb970b6e8e0f036749043d797e55f0b71240": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI am in charge "
+  },
+  "ddac7b1566890cc4018f7f8477748ad56392b79e06d51caf68b221d46d146996": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c6b2c538b4e935253283f83b11a975a845d108889b0324ed27b4a5861edaf070": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "caeddcb9e1e39704a378de3d294525e9afddd077407cb878fc4061df95006f40": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "4fd82094a11b4df6b3b150fdc615185cefcb2bbc9457176d352e68a0f0274709": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "5a0042ab50e6845272bb0e4dad387f6ba6259c76056897c22ab0807163c98a12": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "bc10f7c4c961c85664d570c38dac5734ec1ff3a7c291a3da23cf7ba9465ac3a2": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "\nI\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. Wha"
+  },
+  "6500fc612b75b292e40176b0922d1c2bd680269936bb3f19238d8d7653ae2b7f": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "58bb00923fea1c551cb2402e2d6919e0478fcdd2469ce8cca29b6d2237500dfb": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "d8ee1e8b6afb818070ec1a8504037f70f3ffdf542aed903c0d92b1c69cb48f1d": {
+    "task_type": "Treatment",
+    "subspecialty": "General surgical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. I am"
+  },
+  "bbe6f3fd9c81732a838d4e6fb9d016be65f7638d02933ac0d0ac53d0ad2f9d50": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. I am "
+  },
+  "e0c819358c775e0586252fd4a41817aec95aa7025fe75a717fdd3af1674ab692": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "22a8d16fc2684b6a0f1706af8a95752917ea0f5cf052b3a980a4106970d599c0": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "d7504e6bd4752f46e01efeab9c64327d2b88ff39d7e95f0d72c89ca00a2bd2ce": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.\n\nI'm "
+  },
+  "c6629778d9d7b5e9f30eef50cbb581a920069c9fe12852671bf859ddf3d4fb63": {
+    "task_type": "Knowledge",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland. \nCan you explain me why the i"
+  },
+  "5859b5e8f3ae4ae0934a441d39d793a1d1756a75f2d8644cc4ca3c1cdd157b6d": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 72-year-old w"
+  },
+  "2f0437e212f691df3092367c826c5ab8fe278f48c55e5aea198c5f813b7e229f": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. You a"
+  },
+  "04ea32d45e646d3c19af672a93244273dbedb32e9fced33cf548bcd0bad3b512": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "6ca4871065f0ec8f48d86b567b693452f42084ec886e79baa833aa43bd6cb162": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in \nSwitzerland. An 1"
+  },
+  "3785a18577d960f1989bc32567c2d5560c6472752348a2686acfb2a16c8e41f0": {
+    "task_type": "Knowledge",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland."
+  },
+  "41ac41719da1e36c9ac8b744def7c6c588c4dfd8112009619c69043df21d44e2": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI'm in charge o"
+  },
+  "770d203d74041e943f0a5b439525fa907458a674b0b48a16df9b56a07d8d9bbe": {
+    "task_type": "Treatment",
+    "subspecialty": "Infectious Disease",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. You a"
+  },
+  "298db4ce287b8fa6910fbfdc542e60f161b664caf99695453bdc04216a042d2a": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland. \nI am in charge of 58-years o"
+  },
+  "89d97cce21e8fa77d3a802071691cb222f99edfbe43ffa33ed71ba1ce2403435": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 47-year-old w"
+  },
+  "d4c010402a08dd46b603548ad031cc8b0dacd59e375d8c8a06a13254fddc7872": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 32-year-old p"
+  },
+  "c967ff0a2e306582b7db8867265cc557cf216c53c4886492ed8d37d46a64662a": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.  Plea"
+  },
+  "b14518f9a6b8ee33b27071530a8b570694e36347e24cc512396f12d90ac161a7": {
+    "task_type": "Treatment",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m taking ca"
+  },
+  "f178b9a1979de0953dff095dcbc54769ce6849a0b569262ba387f5d72658431b": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland, in charge of a young patient "
+  },
+  "1ca30560c5692ebc38db4334135d12bcf6b5f8185e78873f727d30e52cbd1572": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI'm in charge o"
+  },
+  "bf82e5d0894d48b626dfe8c8c71c68370edd4af3b0255983032ac40c5fa3e492": {
+    "task_type": "Diagnosis",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland. \nIn charge of a 53-year-old p"
+  },
+  "2023111c89655ea65f4f2e7ce4cf11fe058f95a3e7825543e0c2b2bd4ec835b3": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "23cfe64ed3bffe424289e776551036bbab7f3135b1970004ca53474a5f1010ea": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland. \nI am in charge of a 54 years"
+  },
+  "22dd13589db9e7d8ad6a56f7f2ed84c892fda06db52ac3b1c27943eecb233500": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "e395afa88621e0ac57af6d3f69d1dba4c5da512ad4ed428587fbc64e19cc5357": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland. \nI am in charge of a 54 years"
+  },
+  "9604cec2cbf0a3fd8d5d814063a3ff8bd8a1678529ec57b70850ed75f7fd6b89": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "1318d4b449dceedc86e6d2aca7dc8fe103fbba715086199ee8016a02df505053": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I am an intensive care specialist in a tertiary centre in Switzerland, in charge of a 68-year-old wo"
+  },
+  "86934a2a632a4062965c47bd5064bdb9dd57ff3a45460e99d5ae802fe77b07b9": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland.  Plea"
+  },
+  "b11faba503043685c68d14d86b79217b7cd7d8f55f8af9e2160c30110cdce0b6": {
+    "task_type": "Treatment",
+    "subspecialty": "Cardiovascular",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m a specialist in intensive care medicine working in a university hospital in Switzerland. You a"
+  },
+  "6b60dbb2f91b87ce16b1da4355381946d9c72a71bbaab137fde668ee71d1666f": {
+    "task_type": "Treatment",
+    "subspecialty": "Neurological",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nI\u00e2\u20ac\u2122m in charge"
+  },
+  "86602e650b24b6cdb14bf0ea45a92df0aba762ab83cd38694ed367cd3e7c3acb": {
+    "task_type": "Treatment",
+    "subspecialty": "Respiratory",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 58-year-old w"
+  },
+  "f59b0843594a8fd75b9647023062448202718d3f2d1e7c189112a62745937f20": {
+    "task_type": "Diagnosis",
+    "subspecialty": "General medical",
+    "_meta": "gemma3:27b:v1",
+    "_question_preview": "I\u00e2\u20ac\u2122m an intensive care specialist working in a university hospital in Switzerland.\n\nA 57-year-old m"
+  }
+}

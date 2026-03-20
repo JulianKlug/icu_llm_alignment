@@ -182,7 +182,7 @@ def create_figure_v1_grouped_bar(stats_df: pd.DataFrame) -> plt.Figure:
     setup_plotting()
 
     # Get top subspecialties
-    subspecialties = stats_df.groupby('subspecialty')['n_ratings'].sum().nlargest(6).index.tolist()
+    subspecialties = stats_df.groupby('subspecialty')['n_ratings'].sum().sort_values(ascending=False).index.tolist()
     dimensions = stats_df['dimension'].unique()
 
     fig, ax = plt.subplots(figsize=(16, 8))

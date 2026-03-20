@@ -1,219 +1,190 @@
-"""NLP-based classification for task types and subspecialties."""
+"""LLM-based classification for task types and subspecialties using Ollama."""
 
-import re
-from typing import List, Tuple
+import hashlib
+import json
+import urllib.request
+import urllib.error
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+# Valid categories
+VALID_TASK_TYPES = ["Diagnosis", "Prognosis", "Treatment", "Knowledge", "Other"]
+VALID_SUBSPECIALTIES = [
+    "Cardiovascular", "Respiratory", "Neurological",
+    "Infectious Disease", "General surgical", "General medical"
+]
+
+# Ollama config
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "gemma3:27b"
+OLLAMA_TIMEOUT = 120
+MAX_RETRIES = 2
+
+# Cache path
+CACHE_PATH = Path(__file__).parent / ".classification_cache.json"
+
+# Prompt version — bump this to invalidate cache when prompt changes
+_PROMPT_VERSION = "v1"
+
+SYSTEM_PROMPT = """You are a medical classification expert. Classify ICU (Intensive Care Unit) questions along two axes.
+
+## Task Types
+- **Diagnosis**: Questions asking to identify a condition, disease, cause, or etiology. Includes differential diagnosis and identifying underlying problems.
+- **Prognosis**: Questions about expected outcomes, survival, mortality risk, long-term recovery, or disease trajectory.
+- **Treatment**: Questions about therapeutic interventions, management plans, medications, dosing, procedures, ventilator settings, fluid management, or next clinical steps.
+- **Knowledge**: Questions asking to explain mechanisms, pathophysiology, definitions, guidelines, or criteria. Conceptual or educational questions.
+- **Other**: Questions that do not fit any of the above categories.
+
+## Subspecialties
+- **Cardiovascular**: Heart, hemodynamics, cardiac arrest, arrhythmias, shock (cardiogenic/distributive), vasopressors, ECG, echocardiography, coronary syndromes, heart failure.
+- **Respiratory**: Lungs, ventilation, oxygenation, ARDS, pneumonia (as a respiratory condition), intubation/extubation, weaning, airway management, COPD, asthma, pleural disease.
+- **Neurological**: Brain, spinal cord, consciousness, seizures, stroke, encephalopathy, delirium, sedation, neuromuscular disease, intracranial pressure, GCS.
+- **Infectious Disease**: Sepsis, bacteremia, fungemia, antimicrobial therapy, antibiotic selection, infection source control, fever workup, cultures, resistant organisms.
+- **General surgical**: Post-operative care, trauma, surgical complications, wound management, abdominal emergencies, burns, transplant perioperative care.
+- **General medical**: Metabolic/endocrine disorders, renal failure, electrolyte abnormalities, acid-base disturbances, hematologic issues, GI bleeding, liver failure, nutrition, toxicology, and any ICU question not fitting the above subspecialties.
+
+Respond ONLY with a JSON object: {"task_type": "...", "subspecialty": "..."}"""
 
 
-# Task type keywords
-TASK_TYPE_PATTERNS = {
-    'Diagnosis': [
-        r'\bdiagnos[ie]s?\b',
-        r'\bdifferential\b',
-        r'\blikely cause\b',
-        r'\bwhat.*(?:cause|etiology|underlying)\b',
-        r'\bidentif(?:y|ication)\b.*(?:condition|disease|disorder)\b',
-        r'\bsuspect(?:ed|ing)?\b',
-        r'\bwhat is (?:the|this)\b',
-        r'\bpresentation suggest\b',
-    ],
-    'Prognosis': [
-        r'\bprogno(?:sis|stic)\b',
-        r'\boutcome[s]?\b',
-        r'\bsurviv(?:al|e)\b',
-        r'\bmortality\b',
-        r'\bexpect(?:ed|ation)?\b.*(?:outcome|survival|recovery)\b',
-        r'\blong.term\b',
-        r'\brisk of death\b',
-        r'\bchance[s]? of\b',
-    ],
-    'Treatment': [
-        r'\btreat(?:ment|ed|ing)?\b',
-        r'\bmanage(?:ment)?\b',
-        r'\btherap(?:y|eutic|ies)\b',
-        r'\bshould (?:I|we)\b',
-        r'\bnext step\b',
-        r'\binterven(?:tion|e)\b',
-        r'\bmedication[s]?\b',
-        r'\bdrug[s]?\b',
-        r'\bdose\b',
-        r'\badminister\b',
-        r'\bprescri(?:be|ption)\b',
-        r'\bstart(?:ing)?\b.*(?:on|with)\b',
-        r'\binitiating?\b',
-        r'\bwean(?:ing)?\b',
-        r'\bextubat(?:e|ion)\b',
-        r'\btracheostom(?:y|ie)\b',
-        r'\bantibiotic[s]?\b',
-        r'\bempiri[c]?\b',
-        r'\bresuscitat(?:e|ion)\b',
-        r'\bfluid[s]?\b',
-        r'\bvasopressor[s]?\b',
-    ],
-    'Knowledge': [
-        r'\bexplain\b',
-        r'\bdefin(?:e|ition)\b',
-        r'\bmechanism\b',
-        r'\bpathophysiology\b',
-        r'\bhow does\b',
-        r'\bwhy (?:is|does|do)\b',
-        r'\bwhat (?:is|are) the\b.*(?:criteria|guidelines|recommendations)\b',
-        r'\bdescribe\b',
-        r'\bwhat causes\b',
-    ],
-}
+def _load_cache() -> Dict:
+    """Load classification cache from disk."""
+    if CACHE_PATH.exists():
+        try:
+            with open(CACHE_PATH, "r") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return {}
+    return {}
 
-# Subspecialty keywords
-SUBSPECIALTY_PATTERNS = {
-    'Cardiovascular': [
-        r'\bcardi(?:ac|ovascular|ology)\b',
-        r'\bheart\b',
-        r'\bmyocardial\b',
-        r'\barrhythmi(?:a|as)\b',
-        r'\batrial fibrillation\b',
-        r'\bventricular\b',
-        r'\bcoronary\b',
-        r'\bami\b',
-        r'\bstemi\b',
-        r'\bnstemi\b',
-        r'\bhypotension\b',
-        r'\bshock\b',
-        r'\bvasopressor\b',
-        r'\btroponin\b',
-        r'\becg\b',
-        r'\bechocardiograph\b',
-        r'\bejection fraction\b',
-    ],
-    'Respiratory': [
-        r'\brespir(?:atory|ation)\b',
-        r'\bpulmonary\b',
-        r'\blung[s]?\b',
-        r'\bpneumon(?:ia|itis)\b',
-        r'\bards\b',
-        r'\bintubat(?:e|ion|ed)\b',
-        r'\bventilat(?:or|ion|ed)\b',
-        r'\bextubat(?:e|ion)\b',
-        r'\btracheostom(?:y|ie)\b',
-        r'\bwean(?:ing)?\b',
-        r'\boxygen(?:ation)?\b',
-        r'\bhypox(?:ia|emia|ic)\b',
-        r'\bdyspn(?:o|e)ea\b',
-        r'\bcopd\b',
-        r'\basthma\b',
-        r'\bpleural\b',
-        r'\bchest\b',
-    ],
-    'Neurological': [
-        r'\bneuro(?:logical|logy)?\b',
-        r'\bbrain\b',
-        r'\bcerebr(?:al|ovascular)\b',
-        r'\bstroke\b',
-        r'\bseizure[s]?\b',
-        r'\bepilepsy\b',
-        r'\bencephalopath(?:y|ic)\b',
-        r'\bcoma(?:tose)?\b',
-        r'\bconscious(?:ness)?\b',
-        r'\bgcs\b',
-        r'\bglasgow\b',
-        r'\bsedation\b',
-        r'\bdelirium\b',
-        r'\bmeningitis\b',
-        r'\bintracranial\b',
-        r'\bicp\b',
-    ],
-    'Infectious Disease': [
-        r'\binfect(?:ion|ious|ed)\b',
-        r'\bsepsis\b',
-        r'\bseptic\b',
-        r'\bbacteri(?:a|al|emia)\b',
-        r'\bvir(?:us|al|emia)\b',
-        r'\bfung(?:al|i|emia)\b',
-        r'\bantibiotic[s]?\b',
-        r'\bantimicrob(?:ial)?\b',
-        r'\bfever\b',
-        r'\bpyrexia\b',
-        r'\bculture[s]?\b',
-        r'\bpneumonia\b',
-        r'\bmeningitis\b',
-        r'\bendocarditis\b',
-        r'\bcsf\b',
-    ],
-    'Renal': [
-        r'\bren(?:al|o)\b',
-        r'\bkidney[s]?\b',
-        r'\bakut?e kidney\b',
-        r'\baki\b',
-        r'\bdialys(?:is|ed)\b',
-        r'\bcrrt\b',
-        r'\bhemodialysis\b',
-        r'\boliguri(?:a|c)\b',
-        r'\banuri(?:a|c)\b',
-        r'\bcreatinine\b',
-        r'\bgfr\b',
-        r'\burea\b',
-        r'\belectrolyte[s]?\b',
-        r'\bhyperkal(?:emia|emic)\b',
-        r'\bhyponatr(?:emia|emic)\b',
-    ],
-    'Trauma': [
-        r'\btrauma(?:tic)?\b',
-        r'\binjur(?:y|ies|ed)\b',
-        r'\bfracture[s]?\b',
-        r'\baccident\b',
-        r'\bfall\b',
-        r'\bhead injur(?:y|ies)\b',
-        r'\btbi\b',
-        r'\bhemorrhag(?:e|ic)\b',
-        r'\bbleed(?:ing)?\b',
-        r'\bsurger(?:y|ical)\b',
-        r'\bpost.?op(?:erative)?\b',
-    ],
-    'Metabolic/Endocrine': [
-        r'\bmetabol(?:ic|ism)\b',
-        r'\bendocrin(?:e|ology)\b',
-        r'\bdiabet(?:es|ic)\b',
-        r'\bglucose\b',
-        r'\bhyperglycemi(?:a|c)\b',
-        r'\bhypoglycemi(?:a|c)\b',
-        r'\binsulin\b',
-        r'\bdka\b',
-        r'\bketoacidosis\b',
-        r'\bthyroid\b',
-        r'\badrenal\b',
-        r'\blactate\b',
-        r'\bacidos(?:is|ic)\b',
-        r'\balk(?:al)?os(?:is|ic)\b',
-    ],
-    'Gastrointestinal': [
-        r'\bgastro(?:intestinal)?\b',
-        r'\bgi\b(?! )', # GI but not followed by space (avoid GI Bill etc)
-        r'\bliver\b',
-        r'\bhepat(?:ic|itis|ology)\b',
-        r'\bpancrea(?:s|tic|titis)\b',
-        r'\bbowel\b',
-        r'\bintestin(?:e|al)\b',
-        r'\bbleed(?:ing)?.*(?:gi|gastro|upper|lower)\b',
-        r'\bascites\b',
-        r'\bcirrhosis\b',
-        r'\bvarices\b',
-    ],
-    'Hematology': [
-        r'\bhemato(?:logy|logical)\b',
-        r'\bblood\b',
-        r'\banemi(?:a|c)\b',
-        r'\bthrombocytopeni(?:a|c)\b',
-        r'\bcoagul(?:ation|opathy)\b',
-        r'\bdic\b',
-        r'\btransfus(?:ion|ed)\b',
-        r'\bplatelet[s]?\b',
-        r'\bhemoglobin\b',
-        r'\bhematocrit\b',
-    ],
-}
+
+def _save_cache(cache: Dict) -> None:
+    """Save classification cache to disk."""
+    with open(CACHE_PATH, "w") as f:
+        json.dump(cache, f, indent=2)
+
+
+def _cache_key(question: str) -> str:
+    """Generate cache key from question text."""
+    return hashlib.sha256(question.encode("utf-8")).hexdigest()
+
+
+def _cache_meta() -> str:
+    """Cache metadata string for invalidation."""
+    return f"{OLLAMA_MODEL}:{_PROMPT_VERSION}"
+
+
+def _normalize_value(value: str, valid_options: List[str], fallback: str) -> str:
+    """Normalize a classification value, fuzzy-matching if needed."""
+    if not isinstance(value, str):
+        return fallback
+
+    value_stripped = value.strip()
+
+    # Exact match (case-insensitive)
+    for option in valid_options:
+        if value_stripped.lower() == option.lower():
+            return option
+
+    # Substring match
+    for option in valid_options:
+        if option.lower() in value_stripped.lower() or value_stripped.lower() in option.lower():
+            return option
+
+    return fallback
+
+
+def _classify_question(question: str) -> Dict[str, str]:
+    """Classify a single question using Ollama. Returns dict with task_type and subspecialty."""
+
+    payload = {
+        "model": OLLAMA_MODEL,
+        "prompt": f"Classify this ICU question:\n\n{question}\n\nRespond with JSON only: {{\"task_type\": \"...\", \"subspecialty\": \"...\"}}",
+        "system": SYSTEM_PROMPT,
+        "format": "json",
+        "stream": False,
+        "options": {
+            "temperature": 0.0
+        }
+    }
+
+    data = json.dumps(payload).encode("utf-8")
+
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            req = urllib.request.Request(
+                OLLAMA_URL,
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+
+            response_text = result.get("response", "")
+            parsed = json.loads(response_text)
+
+            task_type = _normalize_value(
+                parsed.get("task_type", ""), VALID_TASK_TYPES, "Other"
+            )
+            subspecialty = _normalize_value(
+                parsed.get("subspecialty", ""), VALID_SUBSPECIALTIES, "General medical"
+            )
+
+            return {"task_type": task_type, "subspecialty": subspecialty}
+
+        except (urllib.error.URLError, json.JSONDecodeError, KeyError,
+                TimeoutError, OSError) as e:
+            if attempt < MAX_RETRIES:
+                continue
+            # All retries exhausted — return fallback
+            return {"task_type": "Other", "subspecialty": "General medical"}
+
+
+# Module-level cache (loaded once)
+_cache: Dict = {}
+_cache_loaded = False
+
+
+def _ensure_cache() -> Dict:
+    """Lazy-load the cache."""
+    global _cache, _cache_loaded
+    if not _cache_loaded:
+        _cache = _load_cache()
+        _cache_loaded = True
+    return _cache
+
+
+def _get_classification(question: str) -> Dict[str, str]:
+    """Get classification for a question, using cache if available."""
+    cache = _ensure_cache()
+    key = _cache_key(question)
+    meta = _cache_meta()
+
+    # Check cache
+    if key in cache and cache[key].get("_meta") == meta:
+        return {
+            "task_type": cache[key]["task_type"],
+            "subspecialty": cache[key]["subspecialty"]
+        }
+
+    # Classify via LLM
+    result = _classify_question(question)
+
+    # Update cache (crash-safe: write after each classification)
+    cache[key] = {
+        "task_type": result["task_type"],
+        "subspecialty": result["subspecialty"],
+        "_meta": meta,
+        "_question_preview": question[:100]
+    }
+    _save_cache(cache)
+
+    return result
 
 
 def classify_task_type(question: str) -> str:
     """
-    Classify a question into a task type based on keywords.
+    Classify a question into a task type using LLM.
 
     Args:
         question: The question text
@@ -221,53 +192,20 @@ def classify_task_type(question: str) -> str:
     Returns:
         Task type: 'Diagnosis', 'Prognosis', 'Treatment', 'Knowledge', or 'Other'
     """
-    question_lower = question.lower()
-
-    scores = {}
-    for task_type, patterns in TASK_TYPE_PATTERNS.items():
-        score = 0
-        for pattern in patterns:
-            if re.search(pattern, question_lower):
-                score += 1
-        scores[task_type] = score
-
-    # Return the task type with highest score, or 'Other' if no matches
-    if max(scores.values()) == 0:
-        return 'Other'
-
-    return max(scores, key=scores.get)
+    return _get_classification(question)["task_type"]
 
 
 def classify_subspecialty(question: str) -> str:
     """
-    Classify a question into an ICU subspecialty based on keywords.
+    Classify a question into an ICU subspecialty using LLM.
 
     Args:
         question: The question text
 
     Returns:
-        Subspecialty name or 'General ICU'
+        Subspecialty name
     """
-    question_lower = question.lower()
-
-    scores = {}
-    for subspecialty, patterns in SUBSPECIALTY_PATTERNS.items():
-        score = 0
-        for pattern in patterns:
-            matches = re.findall(pattern, question_lower)
-            score += len(matches)
-        scores[subspecialty] = score
-
-    # Return subspecialty with highest score, or 'General ICU' if no clear match
-    if max(scores.values()) == 0:
-        return 'General ICU'
-
-    # Require at least 2 matches to assign a subspecialty
-    max_score = max(scores.values())
-    if max_score < 2:
-        return 'General ICU'
-
-    return max(scores, key=scores.get)
+    return _get_classification(question)["subspecialty"]
 
 
 def classify_all_questions(questions: List[str]) -> Tuple[List[str], List[str]]:
@@ -280,7 +218,34 @@ def classify_all_questions(questions: List[str]) -> Tuple[List[str], List[str]]:
     Returns:
         Tuple of (task_types, subspecialties)
     """
-    task_types = [classify_task_type(q) for q in questions]
-    subspecialties = [classify_subspecialty(q) for q in questions]
-
+    task_types = []
+    subspecialties = []
+    for i, q in enumerate(questions):
+        result = _get_classification(q)
+        task_types.append(result["task_type"])
+        subspecialties.append(result["subspecialty"])
+        if (i + 1) % 20 == 0:
+            print(f"   Classified {i + 1}/{len(questions)} questions...")
     return task_types, subspecialties
+
+
+if __name__ == "__main__":
+    # Test with sample ICU questions
+    test_questions = [
+        "What is the most likely diagnosis for a patient presenting with acute onset dyspnea, hypoxemia, and bilateral infiltrates on chest X-ray?",
+        "What is the expected mortality rate for a patient with septic shock requiring three vasopressors?",
+        "What antibiotic regimen should be started for suspected ventilator-associated pneumonia?",
+        "Explain the pathophysiology of acute respiratory distress syndrome (ARDS).",
+        "A 65-year-old patient develops ST-elevation in leads II, III, and aVF. What is the next step in management?",
+    ]
+
+    print(f"Testing LLM classifier with {len(test_questions)} questions...")
+    print(f"Model: {OLLAMA_MODEL}")
+    print(f"Cache: {CACHE_PATH}")
+    print()
+
+    for q in test_questions:
+        result = _get_classification(q)
+        print(f"Q: {q[:80]}...")
+        print(f"   Task: {result['task_type']}, Subspecialty: {result['subspecialty']}")
+        print()
