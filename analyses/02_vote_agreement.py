@@ -28,6 +28,7 @@ import matplotlib
 matplotlib.use('Agg')
 import seaborn as sns
 from irrCAC.raw import CAC
+from sklearn.metrics import cohen_kappa_score
 
 from analyses.utils import (
     load_data, setup_plotting, save_figure_variants, COLORS, PALETTE
@@ -120,31 +121,51 @@ def calculate_agreement_metrics(vote_matrix: pd.DataFrame) -> dict:
     }
 
 
-def calculate_pairwise_agreement(vote_matrix: pd.DataFrame) -> pd.DataFrame:
-    """Calculate pairwise agreement between all rater pairs."""
+def calculate_pairwise_agreement(vote_matrix: pd.DataFrame) -> tuple:
+    """
+    Calculate pairwise weighted Cohen's kappa between all rater pairs.
 
+    Uses linear weights for ordinal votes (-1, 0, +1), so partial
+    disagreements (e.g., -1 vs 0) are penalized less than full
+    disagreements (e.g., -1 vs +1).
+
+    Returns:
+        Tuple of (kappa_df, n_common_df) - pairwise kappa and number of
+        common questions per pair
+    """
     raters = vote_matrix.columns.tolist()
     n_raters = len(raters)
+    labels = [-1, 0, 1]
 
-    agreement_matrix = np.zeros((n_raters, n_raters))
+    kappa_matrix = np.zeros((n_raters, n_raters))
+    n_common_matrix = np.zeros((n_raters, n_raters), dtype=int)
 
     for i, rater1 in enumerate(raters):
         for j, rater2 in enumerate(raters):
             if i == j:
-                agreement_matrix[i, j] = 1.0
+                kappa_matrix[i, j] = 1.0
+                n_common_matrix[i, j] = vote_matrix[rater1].notna().sum()
             else:
-                # Get common questions
                 r1 = vote_matrix[rater1]
                 r2 = vote_matrix[rater2]
                 mask = r1.notna() & r2.notna()
+                n_common = mask.sum()
+                n_common_matrix[i, j] = n_common
 
-                if mask.sum() > 0:
-                    agreement = (r1[mask] == r2[mask]).mean()
-                    agreement_matrix[i, j] = agreement
+                if n_common >= 2:
+                    kappa_matrix[i, j] = cohen_kappa_score(
+                        r1[mask].astype(int),
+                        r2[mask].astype(int),
+                        weights='linear',
+                        labels=labels
+                    )
                 else:
-                    agreement_matrix[i, j] = np.nan
+                    kappa_matrix[i, j] = np.nan
 
-    return pd.DataFrame(agreement_matrix, index=raters, columns=raters)
+    kappa_df = pd.DataFrame(kappa_matrix, index=raters, columns=raters)
+    n_common_df = pd.DataFrame(n_common_matrix, index=raters, columns=raters)
+
+    return kappa_df, n_common_df
 
 
 def calculate_rater_stats(df: pd.DataFrame) -> pd.DataFrame:
@@ -168,7 +189,7 @@ def calculate_rater_stats(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_figure_v1_heatmap(pairwise_df: pd.DataFrame) -> plt.Figure:
-    """Create heatmap of pairwise agreement."""
+    """Create heatmap of pairwise weighted Cohen's kappa."""
     setup_plotting()
 
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -179,14 +200,14 @@ def create_figure_v1_heatmap(pairwise_df: pd.DataFrame) -> plt.Figure:
         annot=True,
         fmt='.2f',
         cmap='RdYlGn',
-        vmin=0,
+        vmin=-0.2,
         vmax=1,
         ax=ax,
         mask=mask,
-        cbar_kws={'label': 'Agreement Rate'}
+        cbar_kws={'label': "Weighted Cohen's Kappa (linear)"}
     )
 
-    ax.set_title('Pairwise Agreement Between Raters\n(Vote Preference)')
+    ax.set_title("Pairwise Weighted Cohen's Kappa Between Raters\n(Vote Preference, linear weights)")
     plt.tight_layout()
 
     return fig
@@ -449,9 +470,16 @@ def main():
     print(f"     p-value: {results['gwet_p_value']:.2e}")
     print(f"     Interpretation: {interpret_agreement(results['gwet_ac1'])}")
 
-    # Pairwise agreement
-    print("\n4. Calculating pairwise agreement...")
-    pairwise_df = calculate_pairwise_agreement(vote_matrix)
+    # Pairwise weighted Cohen's kappa
+    print("\n4. Calculating pairwise weighted Cohen's kappa (linear weights)...")
+    pairwise_df, n_common_df = calculate_pairwise_agreement(vote_matrix)
+
+    # Report range (excluding diagonal)
+    mask = ~np.eye(len(pairwise_df), dtype=bool)
+    kappa_values = pairwise_df.values[mask]
+    kappa_values = kappa_values[~np.isnan(kappa_values)]
+    print(f"   Range: {kappa_values.min():.3f} to {kappa_values.max():.3f}")
+    print(f"   Median: {np.median(kappa_values):.3f}")
 
     # Rater statistics
     print("\n5. Calculating per-rater statistics...")
@@ -492,7 +520,8 @@ def main():
     ])
 
     results_df.to_csv(TABLES_DIR / '02_vote_agreement.csv', index=False)
-    pairwise_df.to_csv(TABLES_DIR / '02_vote_agreement_pairwise.csv')
+    pairwise_df.to_csv(TABLES_DIR / '02_vote_agreement_pairwise_kappa.csv')
+    n_common_df.to_csv(TABLES_DIR / '02_vote_agreement_pairwise_n.csv')
     rater_stats.to_csv(TABLES_DIR / '02_vote_agreement_raters.csv', index=False)
     vote_matrix.to_csv(TABLES_DIR / '02_vote_agreement_matrix.csv')
     print(f"   Saved to: {TABLES_DIR}")
@@ -502,7 +531,7 @@ def main():
 
     fig1 = create_figure_v1_heatmap(pairwise_df)
     save_figure_variants(fig1, '02_vote_agreement', FIGURES_DIR, 1)
-    print("   - Saved: Pairwise agreement heatmap (v1)")
+    print("   - Saved: Pairwise weighted kappa heatmap (v1)")
 
     fig2 = create_figure_v2_rater_votes(rater_stats)
     save_figure_variants(fig2, '02_vote_agreement', FIGURES_DIR, 2)

@@ -32,13 +32,11 @@ This corrected the sample from 482 to **788 answer evaluations** (was dropping a
 
 ## MAJOR (4 issues) -- Results potentially misleading
 
-### 3. Pairwise "kappa" is actually percent agreement
+### 3. ~~Pairwise "kappa" is actually percent agreement~~ FIXED
 
-**File:** `analyses/02_vote_agreement.py:142`
+**File:** `analyses/02_vote_agreement.py`
 
-The code computes `(r1[mask] == r2[mask]).mean()` -- raw percent agreement. But the paper (line 95) states "Pairwise kappa between individual raters ranged from 0.25 to 0.78" and Figure 2a legend says "Pairwise Cohen's kappa heatmap." This is a direct mismatch between code and text.
-
-**Suggested fix:** Replace percent agreement with pairwise Cohen's kappa (e.g., `sklearn.metrics.cohen_kappa_score` or irrCAC pairwise). Alternatively, correct the paper text and figure legend to say "percent agreement" -- but kappa is preferred for chance-corrected comparisons.
+**Fix applied:** Replaced raw percent agreement with weighted Cohen's kappa (linear weights, via `sklearn.metrics.cohen_kappa_score`). Linear weights are appropriate for the 3-level ordinal vote scale (-1, 0, +1). Output renamed to `02_vote_agreement_pairwise_kappa.csv`. Also saves number of common questions per pair (`02_vote_agreement_pairwise_n.csv`). Paper draft and figure legend updated. Pairwise kappa now ranges from -0.195 to 0.667 (median 0.318).
 
 ---
 
@@ -141,7 +139,7 @@ The paper claims (line 133) this correlation is "a novel finding." Given Issue 4
 |---|----------|-------|---------------|-------------|
 | 1 | ~~CRITICAL~~ FIXED | ~~Single-item Krippendorff's alpha~~ | `03_eval_agreement.py` | Fixed: per-dimension alpha |
 | 2 | ~~CRITICAL~~ FIXED | ~~Inconsistent unit of analysis~~ | `data_loader.py`, all analyses | Fixed: 788 evaluations (was 482) |
-| 3 | MAJOR | Pairwise agreement != kappa | `02_vote_agreement.py` | Paper text contradicts code |
+| 3 | ~~MAJOR~~ FIXED | ~~Pairwise agreement != kappa~~ | `02_vote_agreement.py` | Fixed: weighted Cohen's kappa |
 | 4 | MAJOR | Circularity in stratified analysis | `04_stratified_analysis.py` | Central claim may be artifactual |
 | 5 | MAJOR | No statistical tests for Q1-Q4 | `04_stratified_analysis.py` | Table 3 lacks significance tests |
 | 6 | MAJOR | Multiple testing uncorrected | Multiple scripts | Inflated false positive risk |
