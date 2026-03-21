@@ -143,6 +143,9 @@ def calculate_subspecialty_stats(all_answers_df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(results)
 
 
+MIN_N_FOR_INTERPRETATION = 20  # Minimum answers for reliable AC1 interpretation
+
+
 def calculate_overall_agreement_by_subspecialty(all_answers_df: pd.DataFrame) -> pd.DataFrame:
     """Calculate overall Gwet's AC1 per subspecialty (across all dimensions)."""
 
@@ -152,21 +155,37 @@ def calculate_overall_agreement_by_subspecialty(all_answers_df: pd.DataFrame) ->
         df_sub = all_answers_df[all_answers_df['subspecialty'] == subspecialty]
         n_answers = df_sub['Answer'].nunique()
 
-        # Compute AC1 for each dimension and average
+        # Compute AC1 for each dimension, collect values and CIs
         ac1_values = []
+        ci_lowers = []
+        ci_uppers = []
         for domain in EVAL_COLS:
             agreement = compute_agreement_for_dimension(df_sub, domain)
             if not np.isnan(agreement['gwet_ac1']):
                 ac1_values.append(agreement['gwet_ac1'])
+                ci_lowers.append(agreement['ci_lower'])
+                ci_uppers.append(agreement['ci_upper'])
 
         mean_ac1 = np.mean(ac1_values) if ac1_values else np.nan
+        mean_ci_lower = np.mean(ci_lowers) if ci_lowers else np.nan
+        mean_ci_upper = np.mean(ci_uppers) if ci_uppers else np.nan
+
+        # Only provide interpretation if sufficient sample size
+        if np.isnan(mean_ac1):
+            interp = 'N/A'
+        elif n_answers < MIN_N_FOR_INTERPRETATION:
+            interp = 'Insufficient data'
+        else:
+            interp = interpret_agreement(mean_ac1)
 
         results.append({
             'subspecialty': subspecialty,
             'n_answers': n_answers,
             'n_ratings': len(df_sub),
             'mean_gwet_ac1': mean_ac1,
-            'interpretation': interpret_agreement(mean_ac1) if not np.isnan(mean_ac1) else 'N/A'
+            'ci_lower': mean_ci_lower,
+            'ci_upper': mean_ci_upper,
+            'interpretation': interp
         })
 
     return pd.DataFrame(results).sort_values('n_answers', ascending=False)

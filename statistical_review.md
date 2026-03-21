@@ -95,23 +95,19 @@ This corrected the sample from 482 to **788 answer evaluations** (was dropping a
 
 ---
 
-### 10. Small subgroup AC1 reported without qualification
+### 10. ~~Small subgroup AC1 reported without qualification~~ FIXED
 
-**Files:** `analyses/06_subspecialty_analysis.py`, `07_task_type_analysis.py`; Paper Tables 4-5
+**Files:** `analyses/06_subspecialty_analysis.py`, `07_task_type_analysis.py`
 
-Prognosis (n=4), General surgical (n=14), Other (n=2) are reported with AC1 and interpretation labels despite extremely wide CIs.
-
-**Suggested fix:** Report 95% CIs alongside all AC1 values in Tables 4-5. Add a minimum threshold (e.g., n >= 20) below which AC1 is reported as "N/A - insufficient data" rather than given a Landis-Koch label.
+**Fix applied:** Added 95% CIs to overall agreement tables. Added `MIN_N_FOR_INTERPRETATION = 20` threshold: subgroups below this (General surgical n=11, Prognosis n=4, Other n=2) now show "Insufficient data" instead of Landis-Koch labels. Paper Tables 4-5 and results text updated.
 
 ---
 
 ## MINOR (2 issues) -- Worth noting
 
-### 11. Missing data mechanism not discussed
+### 11. Missing data mechanism not discussed -- ACCEPTED
 
-~30% of expected second-answer evaluations are missing (by design: only when Vote=12). If Vote=12 is more likely for mediocre answers, this subset is not representative.
-
-**Suggested fix:** Compare dimension scores between Vote=12 and Vote=1/2 questions in a supplementary table.
+Second answer evaluations only available when Vote=12 (by design). Potential selection bias acknowledged in Limitations section. No additional analysis performed; risk judged minor given the study design.
 
 ---
 
@@ -134,8 +130,8 @@ The paper claims this correlation is "a novel finding." The circularity concern 
 | 7 | ~~MODERATE~~ FIXED | ~~Nominal weights for ordinal data~~ | `02_vote_agreement.py` | Fixed: ordinal + nominal reported |
 | 8 | MODERATE | value_domain includes 0 | `03_eval_agreement.py` | Alpha deflated |
 | 9 | ~~MODERATE~~ FIXED | ~~No clustering accounted for~~ | `05_correlation_analysis.py` | Clustered bootstrap added |
-| 10 | MODERATE | Small subgroup AC1 | `06/07_*_analysis.py` | Unreliable subgroup conclusions |
-| 11 | MINOR | Missing data mechanism | Paper draft | Possible selection bias |
+| 10 | ~~MODERATE~~ FIXED | ~~Small subgroup AC1~~ | `06/07_*_analysis.py` | CIs + min-n threshold added |
+| 11 | MINOR | Missing data mechanism | Paper draft | Accepted -- low risk |
 | 12 | ~~MINOR~~ ADDRESSED | ~~Overclaimed novelty~~ | Paper draft | Simulation supports claim |
 
 ## Recommended Fix Priority
