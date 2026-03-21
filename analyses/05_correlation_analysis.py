@@ -98,7 +98,7 @@ def calculate_correlations(metrics_df: pd.DataFrame) -> dict:
     # Spearman
     spearman_r, spearman_p = stats.spearmanr(alignment, agreement_std)
 
-    # Confidence interval for Pearson
+    # Confidence interval for Pearson (Fisher z-transform, assumes independence)
     n = len(clean)
     z = np.arctanh(pearson_r)
     se = 1 / np.sqrt(n - 3)
@@ -113,6 +113,61 @@ def calculate_correlations(metrics_df: pd.DataFrame) -> dict:
         'spearman_r': spearman_r,
         'spearman_p': spearman_p,
         'n': n
+    }
+
+
+def clustered_bootstrap_ci(all_answers_df: pd.DataFrame,
+                           n_bootstrap: int = 2000, seed: int = 42) -> dict:
+    """
+    Compute clustered bootstrap confidence intervals for the alignment-agreement
+    correlation, resampling raters (clusters) with replacement.
+
+    This accounts for within-rater dependency that standard CIs ignore.
+
+    Returns:
+        Dictionary with bootstrap CIs for Pearson r and Spearman rho
+    """
+    rng = np.random.default_rng(seed)
+    raters = all_answers_df['Name'].unique()
+    alignment_col = EVAL_COLS[0]  # Alignment with Guidelines
+
+    pearson_boots = []
+    spearman_boots = []
+
+    for _ in range(n_bootstrap):
+        # Resample raters with replacement
+        sampled_raters = rng.choice(raters, size=len(raters), replace=True)
+
+        # Build resampled dataset (may have duplicate raters)
+        parts = []
+        for i, rater in enumerate(sampled_raters):
+            rater_data = all_answers_df[all_answers_df['Name'] == rater].copy()
+            # Give unique suffix to avoid merging duplicates
+            rater_data['Name'] = f'{rater}_{i}'
+            parts.append(rater_data)
+        boot_df = pd.concat(parts, ignore_index=True)
+
+        # Recompute answer-level metrics
+        boot_metrics = compute_answer_metrics(boot_df)
+        alignment_mean = boot_metrics['Alignment with Guidelines_mean']
+        mean_std = boot_metrics['mean_std']
+        clean = pd.DataFrame({'a': alignment_mean, 's': mean_std}).dropna()
+
+        if len(clean) >= 3:
+            r, _ = stats.pearsonr(clean['a'], clean['s'])
+            rho, _ = stats.spearmanr(clean['a'], clean['s'])
+            pearson_boots.append(r)
+            spearman_boots.append(rho)
+
+    pearson_boots = np.array(pearson_boots)
+    spearman_boots = np.array(spearman_boots)
+
+    return {
+        'pearson_ci_lower_boot': np.percentile(pearson_boots, 2.5),
+        'pearson_ci_upper_boot': np.percentile(pearson_boots, 97.5),
+        'spearman_ci_lower_boot': np.percentile(spearman_boots, 2.5),
+        'spearman_ci_upper_boot': np.percentile(spearman_boots, 97.5),
+        'n_bootstrap': len(pearson_boots),
     }
 
 
@@ -330,10 +385,19 @@ def main():
 
     if 'error' not in corr:
         print(f"   Pearson r: {corr['pearson_r']:.3f} (p = {corr['pearson_p']:.4f})")
-        print(f"   95% CI: [{corr['pearson_ci_lower']:.3f}, {corr['pearson_ci_upper']:.3f}]")
+        print(f"   95% CI (Fisher): [{corr['pearson_ci_lower']:.3f}, {corr['pearson_ci_upper']:.3f}]")
         print(f"   Spearman ρ: {corr['spearman_r']:.3f} (p = {corr['spearman_p']:.4f})")
     else:
         print(f"   Error: {corr['error']}")
+
+    # Clustered bootstrap CIs (resampling raters)
+    print("\n   Computing clustered bootstrap CIs (2000 iterations, resampling raters)...")
+    boot = clustered_bootstrap_ci(all_answers_df)
+    print(f"   Pearson r 95% CI (clustered): [{boot['pearson_ci_lower_boot']:.3f}, {boot['pearson_ci_upper_boot']:.3f}]")
+    print(f"   Spearman ρ 95% CI (clustered): [{boot['spearman_ci_lower_boot']:.3f}, {boot['spearman_ci_upper_boot']:.3f}]")
+    # Merge bootstrap results into corr dict
+    if 'error' not in corr:
+        corr.update(boot)
 
     # Per-dimension correlations with BH correction
     print("\n5. Computing per-dimension correlations (BH-corrected)...")
@@ -351,16 +415,18 @@ def main():
             'metric': 'Pearson correlation (alignment vs std)',
             'value': corr['pearson_r'],
             'p_value': corr['pearson_p'],
-            'ci_lower': corr['pearson_ci_lower'],
-            'ci_upper': corr['pearson_ci_upper'],
-            'interpretation': 'Negative = higher alignment → lower std → better agreement'
+            'ci_lower_fisher': corr['pearson_ci_lower'],
+            'ci_upper_fisher': corr['pearson_ci_upper'],
+            'ci_lower_clustered': corr.get('pearson_ci_lower_boot', np.nan),
+            'ci_upper_clustered': corr.get('pearson_ci_upper_boot', np.nan),
         }, {
             'metric': 'Spearman correlation',
             'value': corr['spearman_r'],
             'p_value': corr['spearman_p'],
-            'ci_lower': np.nan,
-            'ci_upper': np.nan,
-            'interpretation': ''
+            'ci_lower_fisher': np.nan,
+            'ci_upper_fisher': np.nan,
+            'ci_lower_clustered': corr.get('spearman_ci_lower_boot', np.nan),
+            'ci_upper_clustered': corr.get('spearman_ci_upper_boot', np.nan),
         }])
         corr_summary_df.to_csv(TABLES_DIR / '05_correlation_analysis.csv', index=False)
 

@@ -87,13 +87,11 @@ This corrected the sample from 482 to **788 answer evaluations** (was dropping a
 
 ---
 
-### 9. No clustering/nesting accounted for
+### 9. ~~No clustering/nesting accounted for~~ FIXED
 
-**File:** `analyses/05_correlation_analysis.py:96-99`
+**File:** `analyses/05_correlation_analysis.py`
 
-The same rater contributes to many answers, creating within-rater correlation. `scipy.stats.pearsonr/spearmanr` assumes independence, so standard errors may be too small.
-
-**Suggested fix:** Partially mitigated by answer-level aggregation. For more rigor, use clustered bootstrap CIs (by rater) or a mixed-effects model with rater as random effect (`statsmodels.MixedLM`).
+**Fix applied:** Added `clustered_bootstrap_ci()` (2000 iterations, resampling raters with replacement). Clustered CIs are wider and cross zero (Pearson [-0.450, 0.125], Spearman [-0.470, 0.165]) due to only 8 clusters (raters). Fisher z-transform CIs assuming independence exclude zero. Paper reports both, noting the small number of clusters as a limitation. Output: `05_correlation_analysis.csv` now includes both Fisher and clustered CIs.
 
 ---
 
@@ -135,7 +133,7 @@ The paper claims this correlation is "a novel finding." The circularity concern 
 | 6 | ~~MAJOR~~ FIXED | ~~Multiple testing uncorrected~~ | Multiple scripts | BH correction + exploratory label |
 | 7 | ~~MODERATE~~ FIXED | ~~Nominal weights for ordinal data~~ | `02_vote_agreement.py` | Fixed: ordinal + nominal reported |
 | 8 | MODERATE | value_domain includes 0 | `03_eval_agreement.py` | Alpha deflated |
-| 9 | MODERATE | No clustering accounted for | `05_correlation_analysis.py` | Standard errors too small |
+| 9 | ~~MODERATE~~ FIXED | ~~No clustering accounted for~~ | `05_correlation_analysis.py` | Clustered bootstrap added |
 | 10 | MODERATE | Small subgroup AC1 | `06/07_*_analysis.py` | Unreliable subgroup conclusions |
 | 11 | MINOR | Missing data mechanism | Paper draft | Possible selection bias |
 | 12 | ~~MINOR~~ ADDRESSED | ~~Overclaimed novelty~~ | Paper draft | Simulation supports claim |
