@@ -112,12 +112,15 @@ def get_rated_answers(df: pd.DataFrame) -> pd.DataFrame:
     """
     Get evaluation scores for the rated answer(s) based on Vote.
 
-    - Vote=1: Use first answer evals
-    - Vote=2: Use second answer evals
-    - Vote=12: Use both (create two rows)
+    The FIRST_EVAL_COLS always contain the evaluation of the PREFERRED answer.
+    The SECOND_EVAL_COLS contain the evaluation of the other answer only when Vote=12.
+
+    - Vote=1: FIRST_EVAL_COLS rate the first answer (preferred)
+    - Vote=2: FIRST_EVAL_COLS rate the second answer (preferred)
+    - Vote=12: FIRST_EVAL_COLS rate the first answer, SECOND_EVAL_COLS rate the second
 
     Returns:
-        DataFrame with standardized eval columns
+        DataFrame with standardized eval columns and answer_type label
     """
     rows = []
 
@@ -130,16 +133,30 @@ def get_rated_answers(df: pd.DataFrame) -> pd.DataFrame:
             'Vote': vote,
         }
 
-        if vote == 1 or vote == 12:
-            # First answer rated
+        if vote == 1:
+            # First answer preferred: FIRST_EVAL_COLS rate the first answer
+            r = base_data.copy()
+            r['answer_type'] = 'first'
+            for i, col in enumerate(FIRST_EVAL_COLS):
+                r[DIMENSION_NAMES[i]] = row[col]
+            rows.append(r)
+
+        elif vote == 2:
+            # Second answer preferred: FIRST_EVAL_COLS rate the second answer
+            r = base_data.copy()
+            r['answer_type'] = 'second'
+            for i, col in enumerate(FIRST_EVAL_COLS):
+                r[DIMENSION_NAMES[i]] = row[col]
+            rows.append(r)
+
+        elif vote == 12:
+            # Both equal: FIRST_EVAL_COLS rate first, SECOND_EVAL_COLS rate second
             first_row = base_data.copy()
             first_row['answer_type'] = 'first'
             for i, col in enumerate(FIRST_EVAL_COLS):
                 first_row[DIMENSION_NAMES[i]] = row[col]
             rows.append(first_row)
 
-        if vote == 2 or vote == 12:
-            # Second answer rated
             second_row = base_data.copy()
             second_row['answer_type'] = 'second'
             for i, col in enumerate(SECOND_EVAL_COLS):
@@ -180,29 +197,55 @@ EVAL_COLS = [
 
 def create_concatenated_answers_df(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Concatenate first and second answers into one dataframe with standardized columns.
+    Concatenate rated answers into one dataframe with standardized columns.
 
-    This combines all answers (first and second) into a single dataset where each
-    row represents one rater's evaluation of one answer.
+    The FIRST_EVAL_COLS always contain the evaluation of the PREFERRED answer.
+    The SECOND_EVAL_COLS contain the evaluation of the other answer only when Vote=12.
+
+    - Vote=1: FIRST_EVAL_COLS paired with First Answer text (first answer preferred)
+    - Vote=2: FIRST_EVAL_COLS paired with Second Answer text (second answer preferred)
+    - Vote=12: FIRST_EVAL_COLS paired with First Answer, SECOND_EVAL_COLS with Second Answer
 
     Returns:
-        DataFrame with columns: Answer, Question, Name, answer_type, and standardized Eval columns
+        DataFrame with columns: Answer, Question, Name, answer_type, question_id,
+        and standardized Eval columns
     """
-    # First answer dataframe
-    first_answer_df = df[['First Answer', 'Question', 'Name', 'question_id'] + FIRST_EVAL_COLS].copy()
-    first_answer_df = first_answer_df.rename(columns={'First Answer': 'Answer'})
-    first_answer_df['answer_type'] = 'first'
+    parts = []
 
-    # Second answer dataframe - rename columns to match first answer
-    second_cols_map = dict(zip(SECOND_EVAL_COLS, EVAL_COLS))
-    second_cols_map['Second Answer'] = 'Answer'
+    # Vote=1: first answer preferred, FIRST_EVAL_COLS rate the first answer
+    vote1 = df[df['Vote'] == 1].copy()
+    if len(vote1) > 0:
+        v1_df = vote1[['First Answer', 'Question', 'Name', 'question_id'] + FIRST_EVAL_COLS].copy()
+        v1_df = v1_df.rename(columns={'First Answer': 'Answer'})
+        v1_df['answer_type'] = 'first'
+        parts.append(v1_df)
 
-    second_answer_df = df[['Second Answer', 'Question', 'Name', 'question_id'] + SECOND_EVAL_COLS].copy()
-    second_answer_df = second_answer_df.rename(columns=second_cols_map)
-    second_answer_df['answer_type'] = 'second'
+    # Vote=2: second answer preferred, FIRST_EVAL_COLS rate the second answer
+    vote2 = df[df['Vote'] == 2].copy()
+    if len(vote2) > 0:
+        v2_df = vote2[['Second Answer', 'Question', 'Name', 'question_id'] + FIRST_EVAL_COLS].copy()
+        v2_df = v2_df.rename(columns={'Second Answer': 'Answer'})
+        v2_df['answer_type'] = 'second'
+        parts.append(v2_df)
 
-    # Concatenate
-    all_answers_df = pd.concat([first_answer_df, second_answer_df], ignore_index=True)
+    # Vote=12: both answers rated
+    vote12 = df[df['Vote'] == 12].copy()
+    if len(vote12) > 0:
+        # First answer: FIRST_EVAL_COLS
+        v12_first = vote12[['First Answer', 'Question', 'Name', 'question_id'] + FIRST_EVAL_COLS].copy()
+        v12_first = v12_first.rename(columns={'First Answer': 'Answer'})
+        v12_first['answer_type'] = 'first'
+        parts.append(v12_first)
+
+        # Second answer: SECOND_EVAL_COLS -> rename to standard EVAL_COLS
+        second_cols_map = dict(zip(SECOND_EVAL_COLS, EVAL_COLS))
+        second_cols_map['Second Answer'] = 'Answer'
+        v12_second = vote12[['Second Answer', 'Question', 'Name', 'question_id'] + SECOND_EVAL_COLS].copy()
+        v12_second = v12_second.rename(columns=second_cols_map)
+        v12_second['answer_type'] = 'second'
+        parts.append(v12_second)
+
+    all_answers_df = pd.concat(parts, ignore_index=True)
 
     # Remove rows where Answer is NaN
     all_answers_df = all_answers_df.dropna(subset=['Answer'])

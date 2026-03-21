@@ -32,60 +32,24 @@ import seaborn as sns
 import krippendorff
 
 from analyses.utils import (
-    load_data, setup_plotting, save_figure_variants, COLORS, PALETTE,
-    DIMENSION_NAMES, FIRST_EVAL_COLS, SECOND_EVAL_COLS
+    load_data, create_concatenated_answers_df,
+    setup_plotting, save_figure_variants, COLORS, PALETTE,
+    DIMENSION_NAMES, FIRST_EVAL_COLS, SECOND_EVAL_COLS, EVAL_COLS
 )
 
 OUTPUT_DIR = project_root / 'output'
 TABLES_DIR = OUTPUT_DIR / 'tables'
 FIGURES_DIR = OUTPUT_DIR / 'figures'
 
-# Standardized eval column names
-EVAL_COLS = [
-    'Eval Alignment with Guidelines', 'Eval Question Comprehension',
-    'Eval Logical Reasoning', 'Eval Relevance & Completeness',
-    'Eval Harmlessness', 'Eval Fairness', 'Eval Contextual Awareness',
-    'Eval Your Confidence', 'Eval Model Confidence',
-    'Eval Communication & Clarity'
-]
 
-
-def create_concatenated_answers_df(df: pd.DataFrame) -> pd.DataFrame:
+def compute_std_per_answer(all_answers_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Concatenate first and second answers into one dataframe with standardized columns.
+    Compute standard deviation of ratings per answer per domain.
 
     Returns:
-        DataFrame with columns: Answer, Question, Name, and standardized Eval columns
-    """
-    # First answer dataframe
-    first_answer_df = df[['First Answer', 'Question', 'Name'] + FIRST_EVAL_COLS].copy()
-    first_answer_df = first_answer_df.rename(columns={'First Answer': 'Answer'})
-
-    # Second answer dataframe - rename columns to match first answer
-    second_cols_map = dict(zip(SECOND_EVAL_COLS, EVAL_COLS))
-    second_cols_map['Second Answer'] = 'Answer'
-
-    second_answer_df = df[['Second Answer', 'Question', 'Name'] + SECOND_EVAL_COLS].copy()
-    second_answer_df = second_answer_df.rename(columns=second_cols_map)
-
-    # Concatenate
-    all_answers_df = pd.concat([first_answer_df, second_answer_df], ignore_index=True)
-
-    # Remove rows where Answer is NaN
-    all_answers_df = all_answers_df.dropna(subset=['Answer'])
-
-    return all_answers_df
-
-
-def compute_agreement_per_answer(all_answers_df: pd.DataFrame) -> tuple:
-    """
-    Compute agreement metrics (std and Krippendorff's alpha) per answer per domain.
-
-    Returns:
-        Tuple of (std_df, alpha_df) - DataFrames with per-answer agreement metrics
+        DataFrame with per-answer std for each domain
     """
     std_rows = []
-    alpha_rows = []
 
     unique_answers = all_answers_df['Answer'].unique()
 
@@ -95,7 +59,6 @@ def compute_agreement_per_answer(all_answers_df: pd.DataFrame) -> tuple:
         n_raters = len(answer_df)
 
         row_std = {'Answer': answer, 'Question': question, 'n_raters': n_raters}
-        row_alpha = {'Answer': answer, 'Question': question, 'n_raters': n_raters}
 
         for domain in EVAL_COLS:
             # Get ratings for this domain
@@ -109,37 +72,74 @@ def compute_agreement_per_answer(all_answers_df: pd.DataFrame) -> tuple:
                 domain_std = np.nan
             row_std[domain] = domain_std
 
-            # Compute Krippendorff's alpha
-            if len(valid_data) <= 1:
-                domain_alpha = np.nan
-            elif len(set(valid_data)) == 1:
-                # All values are the same - perfect agreement
-                domain_alpha = 1.0
-            else:
-                try:
-                    # Reshape for krippendorff: each row is a rater, each column is an item
-                    # Here we have one item (the answer) and multiple raters
-                    domain_alpha = krippendorff.alpha(
-                        reliability_data=[valid_data],
-                        level_of_measurement='ordinal',
-                        value_domain=[0, 1, 2, 3, 4, 5]
-                    )
-                except:
-                    domain_alpha = np.nan
-            row_alpha[domain] = domain_alpha
-
         std_rows.append(row_std)
-        alpha_rows.append(row_alpha)
 
-    std_df = pd.DataFrame(std_rows)
-    alpha_df = pd.DataFrame(alpha_rows)
+    return pd.DataFrame(std_rows)
 
-    return std_df, alpha_df
+
+def compute_alpha_per_dimension(all_answers_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute Krippendorff's alpha per dimension across all answers.
+
+    Creates a proper items-by-raters reliability matrix for each dimension,
+    where items are unique answers and raters are columns.
+
+    Returns:
+        DataFrame with one row per dimension containing alpha and metadata
+    """
+    alpha_rows = []
+
+    for domain in EVAL_COLS:
+        dim_name = domain.replace('Eval ', '')
+
+        # Build items-by-raters matrix: rows = answers, columns = raters
+        pivot = all_answers_df.pivot_table(
+            index='Answer',
+            columns='Name',
+            values=domain,
+            aggfunc='first'
+        )
+
+        # Filter to answers with at least 2 raters
+        n_raters_per_answer = pivot.notna().sum(axis=1)
+        pivot = pivot[n_raters_per_answer >= 2]
+
+        n_items = len(pivot)
+        n_raters = pivot.shape[1]
+
+        if n_items < 2:
+            alpha_val = np.nan
+        else:
+            try:
+                # Clip any out-of-range values (e.g., 0) to valid Likert range
+                pivot_clipped = pivot.clip(lower=1, upper=5)
+                # krippendorff expects reliability_data as raters x items
+                reliability_data = pivot_clipped.values.T
+                alpha_val = krippendorff.alpha(
+                    reliability_data=reliability_data,
+                    level_of_measurement='ordinal',
+                    value_domain=[1, 2, 3, 4, 5]
+                )
+            except Exception:
+                alpha_val = np.nan
+
+        alpha_rows.append({
+            'dimension': dim_name,
+            'alpha': alpha_val,
+            'n_items': n_items,
+            'n_raters': n_raters,
+        })
+
+    return pd.DataFrame(alpha_rows)
 
 
 def summarize_agreement(std_df: pd.DataFrame, alpha_df: pd.DataFrame) -> pd.DataFrame:
     """
     Create summary statistics of agreement across all answers.
+
+    Args:
+        std_df: Per-answer std DataFrame
+        alpha_df: Per-dimension Krippendorff's alpha DataFrame
     """
     summary_rows = []
 
@@ -150,8 +150,9 @@ def summarize_agreement(std_df: pd.DataFrame, alpha_df: pd.DataFrame) -> pd.Data
         # Std statistics
         std_values = std_df[domain].dropna()
 
-        # Alpha statistics
-        alpha_values = alpha_df[domain].dropna()
+        # Get per-dimension alpha from the alpha_df
+        alpha_row = alpha_df[alpha_df['dimension'] == dim_name]
+        alpha_val = alpha_row['alpha'].values[0] if len(alpha_row) > 0 else np.nan
 
         summary_rows.append({
             'dimension': dim_name,
@@ -161,8 +162,7 @@ def summarize_agreement(std_df: pd.DataFrame, alpha_df: pd.DataFrame) -> pd.Data
             'std_sd': std_values.std(),
             'std_min': std_values.min(),
             'std_max': std_values.max(),
-            'alpha_mean': alpha_values.mean() if len(alpha_values) > 0 else np.nan,
-            'alpha_median': alpha_values.median() if len(alpha_values) > 0 else np.nan,
+            'krippendorff_alpha': alpha_val,
             'pct_perfect_agreement': (std_values == 0).mean() * 100,
         })
 
@@ -320,29 +320,37 @@ def main():
     print(f"   Total answer-rater pairs: {len(all_answers_df)}")
     print(f"   Unique answers: {n_unique_answers}")
 
-    # Compute agreement per answer
-    print("\n3. Computing agreement metrics per answer...")
-    std_df, alpha_df = compute_agreement_per_answer(all_answers_df)
-    print(f"   Computed std and Krippendorff's alpha for {len(std_df)} answers")
+    # Compute std per answer
+    print("\n3. Computing std per answer...")
+    std_df = compute_std_per_answer(all_answers_df)
+    print(f"   Computed std for {len(std_df)} answers")
+
+    # Compute Krippendorff's alpha per dimension (proper multi-item computation)
+    print("\n4. Computing Krippendorff's alpha per dimension...")
+    alpha_df = compute_alpha_per_dimension(all_answers_df)
+    for _, row in alpha_df.iterrows():
+        print(f"   - {row['dimension']}: alpha={row['alpha']:.3f} "
+              f"(n_items={row['n_items']}, n_raters={row['n_raters']})")
 
     # Summarize agreement
-    print("\n4. Summarizing agreement across answers...")
+    print("\n5. Summarizing agreement across answers...")
     summary_df = summarize_agreement(std_df, alpha_df)
 
     print("\n   Results (Mean Std per Dimension):")
     for _, row in summary_df.iterrows():
         print(f"   - {row['dimension']}: std={row['std_mean']:.3f}, "
+              f"alpha={row['krippendorff_alpha']:.3f}, "
               f"perfect_agreement={row['pct_perfect_agreement']:.1f}%")
 
     # Save tables
-    print("\n5. Saving tables...")
+    print("\n6. Saving tables...")
     summary_df.to_csv(TABLES_DIR / '03_eval_agreement.csv', index=False)
     std_df.to_csv(TABLES_DIR / '03_eval_agreement_std_per_answer.csv', index=False)
-    alpha_df.to_csv(TABLES_DIR / '03_eval_agreement_alpha_per_answer.csv', index=False)
+    alpha_df.to_csv(TABLES_DIR / '03_eval_agreement_alpha_per_dimension.csv', index=False)
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n6. Creating figures...")
+    print("\n7. Creating figures...")
 
     fig1 = create_figure_v1_std_boxplot(std_df)
     save_figure_variants(fig1, '03_eval_agreement', FIGURES_DIR, 1)
