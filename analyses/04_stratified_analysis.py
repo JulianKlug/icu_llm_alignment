@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import seaborn as sns
+from scipy.stats import mannwhitneyu
 
 from analyses.utils import (
     load_data, create_concatenated_answers_df,
@@ -125,6 +126,228 @@ def calculate_stratified_stats(answer_stats_df: pd.DataFrame) -> pd.DataFrame:
                 })
 
     return pd.DataFrame(results)
+
+
+def test_q1_vs_q4(answer_stats_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Mann-Whitney U tests comparing Q1 (high agreement) vs Q4 (low agreement)
+    per dimension, with Cliff's delta effect size and Benjamini-Hochberg correction.
+
+    Returns:
+        DataFrame with test results per dimension
+    """
+    q1 = answer_stats_df[answer_stats_df['agreement_quartile'] == 'Q1 (High Agr)']
+    q4 = answer_stats_df[answer_stats_df['agreement_quartile'] == 'Q4 (Low Agr)']
+
+    results = []
+    for domain in EVAL_COLS:
+        dim_name = domain.replace('Eval ', '')
+        mean_col = f'{dim_name}_mean'
+
+        x = q1[mean_col].dropna().values
+        y = q4[mean_col].dropna().values
+
+        if len(x) < 2 or len(y) < 2:
+            continue
+
+        # Mann-Whitney U (one-sided: Q1 > Q4)
+        stat, p_value = mannwhitneyu(x, y, alternative='greater')
+
+        # Cliff's delta: proportion of pairs where x > y minus proportion where x < y
+        n_x, n_y = len(x), len(y)
+        greater = sum(1 for xi in x for yi in y if xi > yi)
+        less = sum(1 for xi in x for yi in y if xi < yi)
+        cliffs_delta = (greater - less) / (n_x * n_y)
+
+        results.append({
+            'dimension': dim_name,
+            'q1_mean': x.mean(),
+            'q4_mean': y.mean(),
+            'delta': x.mean() - y.mean(),
+            'q1_n': n_x,
+            'q4_n': n_y,
+            'U_statistic': stat,
+            'p_value': p_value,
+            'cliffs_delta': cliffs_delta,
+        })
+
+    results_df = pd.DataFrame(results)
+
+    # Benjamini-Hochberg correction
+    if len(results_df) > 0:
+        p_values = results_df['p_value'].values
+        n_tests = len(p_values)
+        ranked = np.argsort(p_values)
+        p_adjusted = np.empty(n_tests)
+        for i, rank_idx in enumerate(np.argsort(ranked)):
+            p_adjusted[rank_idx] = p_values[rank_idx] * n_tests / (rank_idx + 1)
+        # Enforce monotonicity and cap at 1.0
+        p_adjusted = np.minimum.accumulate(p_adjusted[::-1])[::-1]
+        p_adjusted = np.minimum(p_adjusted, 1.0)
+        results_df['p_adjusted'] = p_adjusted
+        results_df['significant'] = results_df['p_adjusted'] < 0.05
+
+    return results_df
+
+
+def simulate_null_deltas(all_answers_df: pd.DataFrame, n_simulations: int = 1000,
+                         seed: int = 42) -> pd.DataFrame:
+    """
+    Simulate Q1-Q4 mean differences under the null hypothesis that ratings
+    are drawn independently from the observed marginal distribution per dimension.
+
+    This tests whether the observed association between agreement (low std)
+    and performance (high mean) exceeds what would be expected from the
+    mechanical relationship between bounded Likert means and their std.
+
+    Returns:
+        DataFrame with columns: dimension, observed_delta, null_mean, null_sd,
+        null_p975, p_value
+    """
+    rng = np.random.default_rng(seed)
+
+    # Compute observed marginal distribution per dimension
+    marginals = {}
+    for domain in EVAL_COLS:
+        values = all_answers_df[domain].dropna().values
+        marginals[domain] = values
+
+    # Get the structure: for each answer, how many raters?
+    answer_structure = []
+    for answer in all_answers_df['Answer'].unique():
+        adf = all_answers_df[all_answers_df['Answer'] == answer]
+        n_raters = len(adf)
+        # Count valid ratings per dimension
+        n_valid = {}
+        for domain in EVAL_COLS:
+            n_valid[domain] = adf[domain].notna().sum()
+        answer_structure.append({'n_raters': n_raters, 'n_valid': n_valid})
+
+    # Run simulations
+    sim_deltas = {domain.replace('Eval ', ''): [] for domain in EVAL_COLS}
+
+    for _ in range(n_simulations):
+        # Generate simulated ratings preserving answer structure
+        sim_rows = []
+        for ans_info in answer_structure:
+            row = {}
+            stds = []
+            for domain in EVAL_COLS:
+                dim_name = domain.replace('Eval ', '')
+                n = ans_info['n_valid'][domain]
+                if n >= 2:
+                    # Draw n ratings from the marginal distribution
+                    drawn = rng.choice(marginals[domain], size=n, replace=True)
+                    row[f'{dim_name}_std'] = np.std(drawn, ddof=1)
+                    row[f'{dim_name}_mean'] = np.mean(drawn)
+                    stds.append(row[f'{dim_name}_std'])
+                else:
+                    row[f'{dim_name}_std'] = np.nan
+                    row[f'{dim_name}_mean'] = np.nan
+            row['mean_std'] = np.mean(stds) if stds else np.nan
+            sim_rows.append(row)
+
+        sim_df = pd.DataFrame(sim_rows)
+
+        # Stratify by agreement quartiles
+        valid_std = sim_df['mean_std'].dropna()
+        if len(valid_std) < 4:
+            continue
+        ranks = valid_std.rank(method='first')
+        quartiles = pd.qcut(ranks, q=4, labels=['Q1', 'Q2', 'Q3', 'Q4'])
+        sim_df.loc[valid_std.index, 'quartile'] = quartiles.values
+
+        # Compute Q1-Q4 delta per dimension
+        for domain in EVAL_COLS:
+            dim_name = domain.replace('Eval ', '')
+            mean_col = f'{dim_name}_mean'
+            q1_mean = sim_df[sim_df['quartile'] == 'Q1'][mean_col].mean()
+            q4_mean = sim_df[sim_df['quartile'] == 'Q4'][mean_col].mean()
+            sim_deltas[dim_name].append(q1_mean - q4_mean)
+
+    return sim_deltas
+
+
+def compute_simulation_results(observed_deltas: dict, sim_deltas: dict) -> pd.DataFrame:
+    """
+    Compare observed Q1-Q4 deltas against the null distribution from simulation.
+
+    Returns:
+        DataFrame with observed delta, null distribution stats, and p-value
+        per dimension
+    """
+    results = []
+    for dim_name in observed_deltas:
+        obs = observed_deltas[dim_name]
+        null = np.array(sim_deltas[dim_name])
+        null = null[~np.isnan(null)]
+
+        # One-sided p-value: proportion of null deltas >= observed
+        p_value = (null >= obs).mean() if len(null) > 0 else np.nan
+
+        results.append({
+            'dimension': dim_name,
+            'observed_delta': obs,
+            'null_mean': null.mean(),
+            'null_sd': null.std(),
+            'null_p025': np.percentile(null, 2.5),
+            'null_p975': np.percentile(null, 97.5),
+            'p_value': p_value,
+            'exceeds_null': obs > np.percentile(null, 97.5),
+        })
+
+    return pd.DataFrame(results)
+
+
+def create_figure_simulation(sim_results: pd.DataFrame, sim_deltas: dict) -> plt.Figure:
+    """Create figure comparing observed deltas to null distribution."""
+    setup_plotting()
+
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    dimensions = sim_results['dimension'].values
+    x = np.arange(len(dimensions))
+
+    # Plot null distribution as box plots
+    null_data = [np.array(sim_deltas[d]) for d in dimensions]
+    bp = ax.boxplot(null_data, positions=x, widths=0.5, patch_artist=True,
+                    showfliers=False)
+    for patch in bp['boxes']:
+        patch.set_facecolor(COLORS['neutral'])
+        patch.set_alpha(0.3)
+
+    # Overlay observed deltas
+    observed = sim_results['observed_delta'].values
+    colors = [COLORS['quaternary'] if p < 0.05 else COLORS['neutral']
+              for p in sim_results['p_value'].values]
+    ax.scatter(x, observed, color=colors, s=120, zorder=5, edgecolors='black',
+               linewidths=1.5, label='Observed delta')
+
+    # Add significance markers
+    for i, (obs, p) in enumerate(zip(observed, sim_results['p_value'].values)):
+        if p < 0.001:
+            marker = '***'
+        elif p < 0.01:
+            marker = '**'
+        elif p < 0.05:
+            marker = '*'
+        else:
+            marker = 'ns'
+        ax.text(i, obs + 0.04, marker, ha='center', va='bottom', fontsize=10,
+                fontweight='bold')
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(dimensions, rotation=45, ha='right')
+    ax.set_ylabel('Q1 - Q4 Mean Difference')
+    ax.set_xlabel('Evaluation Dimension')
+    ax.set_title('Observed Q1-Q4 Differences vs Null Distribution\n'
+                 '(Gray boxes = simulated null from marginal distributions; '
+                 'red = p < 0.05)')
+    ax.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+    ax.legend(loc='upper right')
+
+    plt.tight_layout()
+    return fig
 
 
 def create_figure_v1_grouped_bar(stats_df: pd.DataFrame) -> plt.Figure:
@@ -295,14 +518,49 @@ def main():
     print("\n5. Calculating stratified statistics...")
     stats_df = calculate_stratified_stats(answer_stats_df)
 
+    # Mann-Whitney U tests: Q1 vs Q4
+    print("\n6. Testing Q1 vs Q4 (Mann-Whitney U, BH-corrected)...")
+    test_results = test_q1_vs_q4(answer_stats_df)
+    print("\n   Results:")
+    for _, row in test_results.iterrows():
+        sig = '*' if row['significant'] else ''
+        print(f"   - {row['dimension']}: delta={row['delta']:.3f}, "
+              f"Cliff's d={row['cliffs_delta']:.3f}, "
+              f"p_adj={row['p_adjusted']:.4f}{sig}")
+    n_sig_mw = test_results['significant'].sum()
+    print(f"\n   {n_sig_mw}/{len(test_results)} significant after BH correction")
+
+    # Simulation null test for circularity
+    print("\n7. Running simulation null test (1000 iterations)...")
+    pivot = stats_df.pivot(index='dimension', columns='quartile', values='mean')
+    observed_deltas = {}
+    for dim in pivot.index:
+        observed_deltas[dim] = pivot.loc[dim, 'Q1 (High Agr)'] - pivot.loc[dim, 'Q4 (Low Agr)']
+
+    sim_deltas = simulate_null_deltas(all_answers_df, n_simulations=1000)
+    sim_results = compute_simulation_results(observed_deltas, sim_deltas)
+
+    print("\n   Simulation results (observed vs null):")
+    for _, row in sim_results.iterrows():
+        sig = '*' if row['p_value'] < 0.05 else ''
+        print(f"   - {row['dimension']}: observed={row['observed_delta']:.3f}, "
+              f"null={row['null_mean']:.3f} +/- {row['null_sd']:.3f}, "
+              f"p={row['p_value']:.3f}{sig}")
+
+    n_sig = (sim_results['p_value'] < 0.05).sum()
+    print(f"\n   {n_sig}/{len(sim_results)} dimensions have observed delta "
+          f"exceeding 95th percentile of null distribution")
+
     # Save tables
-    print("\n6. Saving tables...")
+    print("\n8. Saving tables...")
     stats_df.to_csv(TABLES_DIR / '04_stratified_analysis.csv', index=False)
     answer_stats_df.to_csv(TABLES_DIR / '04_stratified_answer_stats.csv', index=False)
+    test_results.to_csv(TABLES_DIR / '04_stratified_tests.csv', index=False)
+    sim_results.to_csv(TABLES_DIR / '04_stratified_simulation.csv', index=False)
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n7. Creating figures...")
+    print("\n9. Creating figures...")
 
     fig1 = create_figure_v1_grouped_bar(stats_df)
     save_figure_variants(fig1, '04_stratified_analysis', FIGURES_DIR, 1)
@@ -320,18 +578,21 @@ def main():
     save_figure_variants(fig4, '04_stratified_analysis', FIGURES_DIR, 4)
     print("   - Saved: Small multiples (v4)")
 
+    fig5 = create_figure_simulation(sim_results, sim_deltas)
+    save_figure_variants(fig5, '04_stratified_simulation', FIGURES_DIR, 1)
+    print("   - Saved: Simulation null test (simulation v1)")
+
     # Summary
     print("\n" + "=" * 60)
     print("Analysis complete!")
     print("=" * 60)
 
-    # Find dimensions with biggest difference between Q1 and Q4
-    pivot = stats_df.pivot(index='dimension', columns='quartile', values='mean')
-    diff = pivot['Q1 (High Agr)'] - pivot['Q4 (Low Agr)']
+    diff = pd.Series(observed_deltas)
 
     print(f"\nKey findings:")
     print(f"  - Dimension with largest Q1-Q4 difference: {diff.idxmax()} ({diff.max():.2f})")
     print(f"  - Dimension with smallest Q1-Q4 difference: {diff.idxmin()} ({diff.min():.2f})")
+    print(f"  - {n_sig}/{len(sim_results)} dimensions exceed mechanical null (p < 0.05)")
 
 
 if __name__ == '__main__':

@@ -77,46 +77,70 @@ def create_vote_matrix(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_agreement_metrics(vote_matrix: pd.DataFrame) -> dict:
-    """Calculate agreement metrics using irrCAC."""
+    """
+    Calculate agreement metrics using irrCAC, both nominal (unweighted)
+    and ordinal-weighted.
 
-    cac = CAC(vote_matrix)
+    Ordinal weights are appropriate because votes are on an ordered scale
+    (-1, 0, +1), where partial disagreements (e.g., -1 vs 0) should be
+    penalized less than full disagreements (-1 vs +1).
+    """
+    # Nominal (unweighted) - conservative baseline
+    cac_nom = CAC(vote_matrix)
+    fleiss_nom = cac_nom.fleiss()['est']
+    kripp_nom = cac_nom.krippendorff()['est']
+    gwet_nom = cac_nom.gwet()['est']
 
-    # Fleiss' Kappa
-    fleiss_result = cac.fleiss()
-    fleiss_est = fleiss_result['est']
-
-    # Krippendorff's Alpha
-    krippendorff_result = cac.krippendorff()
-    krippendorff_est = krippendorff_result['est']
-
-    # Gwet's AC1
-    gwet_result = cac.gwet()
-    gwet_est = gwet_result['est']
+    # Ordinal-weighted - primary metric
+    cac_ord = CAC(vote_matrix, weights='ordinal')
+    fleiss_ord = cac_ord.fleiss()['est']
+    kripp_ord = cac_ord.krippendorff()['est']
+    gwet_ord = cac_ord.gwet()['est']
 
     return {
-        'fleiss_kappa': fleiss_est['coefficient_value'],
-        'fleiss_ci_lower': fleiss_est['confidence_interval'][0],
-        'fleiss_ci_upper': fleiss_est['confidence_interval'][1],
-        'fleiss_p_value': fleiss_est['p_value'],
-        'fleiss_se': fleiss_est['se'],
-        'fleiss_pa': fleiss_est['pa'],
-        'fleiss_pe': fleiss_est['pe'],
+        # Nominal (unweighted)
+        'fleiss_kappa': fleiss_nom['coefficient_value'],
+        'fleiss_ci_lower': fleiss_nom['confidence_interval'][0],
+        'fleiss_ci_upper': fleiss_nom['confidence_interval'][1],
+        'fleiss_p_value': fleiss_nom['p_value'],
+        'fleiss_se': fleiss_nom['se'],
+        'fleiss_pa': fleiss_nom['pa'],
+        'fleiss_pe': fleiss_nom['pe'],
 
-        'krippendorff_alpha': krippendorff_est['coefficient_value'],
-        'krippendorff_ci_lower': krippendorff_est['confidence_interval'][0],
-        'krippendorff_ci_upper': krippendorff_est['confidence_interval'][1],
-        'krippendorff_p_value': krippendorff_est['p_value'],
-        'krippendorff_se': krippendorff_est['se'],
+        'krippendorff_alpha': kripp_nom['coefficient_value'],
+        'krippendorff_ci_lower': kripp_nom['confidence_interval'][0],
+        'krippendorff_ci_upper': kripp_nom['confidence_interval'][1],
+        'krippendorff_p_value': kripp_nom['p_value'],
+        'krippendorff_se': kripp_nom['se'],
 
-        'gwet_ac1': gwet_est['coefficient_value'],
-        'gwet_ci_lower': gwet_est['confidence_interval'][0],
-        'gwet_ci_upper': gwet_est['confidence_interval'][1],
-        'gwet_p_value': gwet_est['p_value'],
-        'gwet_se': gwet_est['se'],
+        'gwet_ac1': gwet_nom['coefficient_value'],
+        'gwet_ci_lower': gwet_nom['confidence_interval'][0],
+        'gwet_ci_upper': gwet_nom['confidence_interval'][1],
+        'gwet_p_value': gwet_nom['p_value'],
+        'gwet_se': gwet_nom['se'],
+
+        # Ordinal-weighted
+        'fleiss_kappa_w': fleiss_ord['coefficient_value'],
+        'fleiss_w_ci_lower': fleiss_ord['confidence_interval'][0],
+        'fleiss_w_ci_upper': fleiss_ord['confidence_interval'][1],
+        'fleiss_w_p_value': fleiss_ord['p_value'],
+        'fleiss_w_se': fleiss_ord['se'],
+
+        'krippendorff_alpha_w': kripp_ord['coefficient_value'],
+        'krippendorff_w_ci_lower': kripp_ord['confidence_interval'][0],
+        'krippendorff_w_ci_upper': kripp_ord['confidence_interval'][1],
+        'krippendorff_w_p_value': kripp_ord['p_value'],
+        'krippendorff_w_se': kripp_ord['se'],
+
+        'gwet_ac2': gwet_ord['coefficient_value'],
+        'gwet_ac2_ci_lower': gwet_ord['confidence_interval'][0],
+        'gwet_ac2_ci_upper': gwet_ord['confidence_interval'][1],
+        'gwet_ac2_p_value': gwet_ord['p_value'],
+        'gwet_ac2_se': gwet_ord['se'],
 
         'n_questions': vote_matrix.shape[0],
         'n_raters': vote_matrix.shape[1],
-        'categories': fleiss_result['categories'],
+        'categories': cac_nom.fleiss()['categories'],
         'vote_matrix': vote_matrix
     }
 
@@ -455,20 +479,27 @@ def main():
     print("\n3. Calculating agreement metrics (irrCAC)...")
     results = calculate_agreement_metrics(vote_matrix)
 
-    print(f"\n   Fleiss' Kappa: {results['fleiss_kappa']:.3f}")
-    print(f"     95% CI: ({results['fleiss_ci_lower']:.3f}, {results['fleiss_ci_upper']:.3f})")
-    print(f"     p-value: {results['fleiss_p_value']:.2e}")
-    print(f"     Interpretation: {interpret_agreement(results['fleiss_kappa'])}")
+    print("\n   --- Nominal (unweighted) ---")
+    print(f"   Fleiss' Kappa: {results['fleiss_kappa']:.3f} "
+          f"({results['fleiss_ci_lower']:.3f}, {results['fleiss_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['fleiss_kappa'])}]")
+    print(f"   Krippendorff's Alpha: {results['krippendorff_alpha']:.3f} "
+          f"({results['krippendorff_ci_lower']:.3f}, {results['krippendorff_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['krippendorff_alpha'])}]")
+    print(f"   Gwet's AC1: {results['gwet_ac1']:.3f} "
+          f"({results['gwet_ci_lower']:.3f}, {results['gwet_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['gwet_ac1'])}]")
 
-    print(f"\n   Krippendorff's Alpha: {results['krippendorff_alpha']:.3f}")
-    print(f"     95% CI: ({results['krippendorff_ci_lower']:.3f}, {results['krippendorff_ci_upper']:.3f})")
-    print(f"     p-value: {results['krippendorff_p_value']:.2e}")
-    print(f"     Interpretation: {interpret_agreement(results['krippendorff_alpha'])}")
-
-    print(f"\n   Gwet's AC1: {results['gwet_ac1']:.3f}")
-    print(f"     95% CI: ({results['gwet_ci_lower']:.3f}, {results['gwet_ci_upper']:.3f})")
-    print(f"     p-value: {results['gwet_p_value']:.2e}")
-    print(f"     Interpretation: {interpret_agreement(results['gwet_ac1'])}")
+    print("\n   --- Ordinal-weighted ---")
+    print(f"   Fleiss' Kappa (w): {results['fleiss_kappa_w']:.3f} "
+          f"({results['fleiss_w_ci_lower']:.3f}, {results['fleiss_w_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['fleiss_kappa_w'])}]")
+    print(f"   Krippendorff's Alpha (w): {results['krippendorff_alpha_w']:.3f} "
+          f"({results['krippendorff_w_ci_lower']:.3f}, {results['krippendorff_w_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['krippendorff_alpha_w'])}]")
+    print(f"   Gwet's AC2: {results['gwet_ac2']:.3f} "
+          f"({results['gwet_ac2_ci_lower']:.3f}, {results['gwet_ac2_ci_upper']:.3f}) "
+          f"[{interpret_agreement(results['gwet_ac2'])}]")
 
     # Pairwise weighted Cohen's kappa
     print("\n4. Calculating pairwise weighted Cohen's kappa (linear weights)...")
@@ -488,10 +519,11 @@ def main():
     # Save tables
     print("\n6. Saving tables...")
 
-    # Main results table
+    # Main results table (nominal + ordinal-weighted)
     results_df = pd.DataFrame([
         {
             'metric': "Fleiss' Kappa",
+            'weights': 'nominal',
             'value': results['fleiss_kappa'],
             'ci_lower': results['fleiss_ci_lower'],
             'ci_upper': results['fleiss_ci_upper'],
@@ -501,6 +533,7 @@ def main():
         },
         {
             'metric': "Krippendorff's Alpha",
+            'weights': 'nominal',
             'value': results['krippendorff_alpha'],
             'ci_lower': results['krippendorff_ci_lower'],
             'ci_upper': results['krippendorff_ci_upper'],
@@ -510,12 +543,43 @@ def main():
         },
         {
             'metric': "Gwet's AC1",
+            'weights': 'nominal',
             'value': results['gwet_ac1'],
             'ci_lower': results['gwet_ci_lower'],
             'ci_upper': results['gwet_ci_upper'],
             'p_value': results['gwet_p_value'],
             'se': results['gwet_se'],
             'interpretation': interpret_agreement(results['gwet_ac1'])
+        },
+        {
+            'metric': "Fleiss' Kappa (weighted)",
+            'weights': 'ordinal',
+            'value': results['fleiss_kappa_w'],
+            'ci_lower': results['fleiss_w_ci_lower'],
+            'ci_upper': results['fleiss_w_ci_upper'],
+            'p_value': results['fleiss_w_p_value'],
+            'se': results['fleiss_w_se'],
+            'interpretation': interpret_agreement(results['fleiss_kappa_w'])
+        },
+        {
+            'metric': "Krippendorff's Alpha (weighted)",
+            'weights': 'ordinal',
+            'value': results['krippendorff_alpha_w'],
+            'ci_lower': results['krippendorff_w_ci_lower'],
+            'ci_upper': results['krippendorff_w_ci_upper'],
+            'p_value': results['krippendorff_w_p_value'],
+            'se': results['krippendorff_w_se'],
+            'interpretation': interpret_agreement(results['krippendorff_alpha_w'])
+        },
+        {
+            'metric': "Gwet's AC2",
+            'weights': 'ordinal',
+            'value': results['gwet_ac2'],
+            'ci_lower': results['gwet_ac2_ci_lower'],
+            'ci_upper': results['gwet_ac2_ci_upper'],
+            'p_value': results['gwet_ac2_p_value'],
+            'se': results['gwet_ac2_se'],
+            'interpretation': interpret_agreement(results['gwet_ac2'])
         }
     ])
 

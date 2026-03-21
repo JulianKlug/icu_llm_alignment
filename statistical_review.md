@@ -40,48 +40,40 @@ This corrected the sample from 482 to **788 answer evaluations** (was dropping a
 
 ---
 
-### 4. Circularity in the stratified analysis
+### 4. ~~Circularity in the stratified analysis~~ FIXED
 
-**File:** `analyses/04_stratified_analysis.py:64-96`
+**File:** `analyses/04_stratified_analysis.py`
 
-Agreement quartiles are defined by std of ratings, then performance (mean of those same ratings) is compared across quartiles. On bounded 1-5 Likert scales, std and mean are not independent: extreme means mechanically produce lower std (floor/ceiling effects). The paper's claim that "expert disagreement systematically tracks with lower model performance" (line 103) may be partly artifactual.
-
-**Suggested fix (choose one or combine):**
-- (a) Use an external agreement measure (e.g., per-question Gwet's AC1 via irrCAC) to define quartiles, breaking the circularity.
-- (b) Add a permutation/simulation null test: generate random Likert ratings with the observed marginal distribution and show that observed Q1-Q4 differences exceed the mechanical baseline.
-- (c) At minimum, add a Discussion paragraph acknowledging this limitation. The current Limitations section does not mention it.
+**Fix applied:** Added simulation null test (1000 iterations). Ratings drawn from observed marginal distribution per dimension, preserving n_raters per answer. Result: 9/10 dimensions have observed Q1-Q4 deltas significantly exceeding the mechanical null (p < 0.05). Only Model Confidence (p=0.273) not significant. Output: `04_stratified_simulation.csv` and `04_stratified_simulation_v1.png`. Paper draft updated in Results and Discussion.
 
 ---
 
-### 5. No statistical tests for stratified comparisons
+### 5. ~~No statistical tests for stratified comparisons~~ FIXED
 
-**File:** `analyses/04_stratified_analysis.py:105-127`
+**File:** `analyses/04_stratified_analysis.py`
 
-Q1-Q4 mean differences (deltas 0.31-0.86) are reported as "clinically meaningful" in the paper without any statistical test. The reader cannot distinguish signal from noise.
-
-**Suggested fix:** Add Mann-Whitney U tests (appropriate for ordinal data) comparing Q1 vs Q4 per dimension. Apply Benjamini-Hochberg correction for 10 comparisons. Add effect sizes (Cliff's delta or rank-biserial correlation). Report corrected p-values in Table 3.
+**Fix applied:** Added `test_q1_vs_q4()` function with Mann-Whitney U tests (one-sided), Cliff's delta effect sizes, and Benjamini-Hochberg correction for 10 comparisons. All 10 dimensions significant (p_adj < 0.001) with large effect sizes (Cliff's delta 0.35-0.62). Output: `04_stratified_tests.csv`. Paper Methods and Results updated.
 
 ---
 
-### 6. Multiple testing not addressed
+### 6. ~~Multiple testing not addressed~~ FIXED
 
-**Files:** `analyses/05_correlation_analysis.py:188`, `04_stratified_analysis.py`, `06/07_*_analysis.py`
+**Files:** `analyses/05_correlation_analysis.py`, `04_stratified_analysis.py`
 
-Ten per-dimension correlations (Analysis 05, figure v3), 10 dimension comparisons across 4 quartiles (Analysis 04), and AC1 per dimension per category (Analyses 06-07) are all computed without correction.
-
-**Suggested fix:** Apply Benjamini-Hochberg FDR correction to families of related tests. For exploratory analyses (per-dimension breakdowns), explicitly state they are uncorrected and exploratory.
+**Fix applied:**
+- Analysis 04: BH correction applied to 10 Mann-Whitney U tests (Issue 5). All significant.
+- Analysis 05: Added `compute_per_dimension_correlations()` with Spearman rho and BH correction for 10 per-dimension correlations. 9/10 significant. Output: `05_correlation_per_dimension.csv`. Figure v3 updated with corrected p-values.
+- Analyses 06-07: Paper Methods now explicitly states subgroup analyses are exploratory and descriptive.
 
 ---
 
 ## MODERATE (4 issues) -- Results may be biased or suboptimal
 
-### 7. Nominal weights used for ordinal vote data
+### 7. ~~Nominal weights used for ordinal vote data~~ FIXED
 
-**File:** `analyses/02_vote_agreement.py:81`
+**File:** `analyses/02_vote_agreement.py`
 
-Votes are remapped to -1, 0, +1 (ordinal), but `CAC(vote_matrix)` defaults to nominal (identity) weights. This penalizes partial disagreements (Vote=1 vs Vote=12) as heavily as full disagreements (Vote=1 vs Vote=2), likely underestimating agreement.
-
-**Suggested fix:** Use `CAC(vote_matrix, weights='ordinal')` or `weights='quadratic'`. Report both nominal and weighted agreement and discuss the difference.
+**Fix applied:** Added ordinal-weighted computation via `CAC(vote_matrix, weights='ordinal')`. Both nominal and weighted values are now computed and saved. Weighted values are primary (Fleiss' kappa 0.373, Krippendorff's alpha 0.379, Gwet's AC2 0.342), nominal as sensitivity analysis. Paper Table 2 and Methods updated.
 
 ---
 
@@ -125,11 +117,9 @@ Prognosis (n=4), General surgical (n=14), Other (n=2) are reported with AC1 and 
 
 ---
 
-### 12. "Novel finding" claim for alignment-agreement correlation
+### 12. ~~"Novel finding" claim for alignment-agreement correlation~~ ADDRESSED
 
-The paper claims (line 133) this correlation is "a novel finding." Given Issue 4 (circularity), part of this correlation is mechanically expected from bounded scales.
-
-**Suggested fix:** Qualify the claim: acknowledge the potential mechanical component and provide simulation evidence (Issue 4b) to demonstrate the effect exceeds the baseline.
+The paper claims this correlation is "a novel finding." The circularity concern (Issue 4) has been addressed via simulation null test, confirming the effect is real beyond mechanical baseline. The Discussion now acknowledges the potential mechanical component and cites the simulation evidence.
 
 ---
 
@@ -140,15 +130,15 @@ The paper claims (line 133) this correlation is "a novel finding." Given Issue 4
 | 1 | ~~CRITICAL~~ FIXED | ~~Single-item Krippendorff's alpha~~ | `03_eval_agreement.py` | Fixed: per-dimension alpha |
 | 2 | ~~CRITICAL~~ FIXED | ~~Inconsistent unit of analysis~~ | `data_loader.py`, all analyses | Fixed: 788 evaluations (was 482) |
 | 3 | ~~MAJOR~~ FIXED | ~~Pairwise agreement != kappa~~ | `02_vote_agreement.py` | Fixed: weighted Cohen's kappa |
-| 4 | MAJOR | Circularity in stratified analysis | `04_stratified_analysis.py` | Central claim may be artifactual |
-| 5 | MAJOR | No statistical tests for Q1-Q4 | `04_stratified_analysis.py` | Table 3 lacks significance tests |
-| 6 | MAJOR | Multiple testing uncorrected | Multiple scripts | Inflated false positive risk |
-| 7 | MODERATE | Nominal weights for ordinal data | `02_vote_agreement.py` | Agreement underestimated |
+| 4 | ~~MAJOR~~ FIXED | ~~Circularity in stratified analysis~~ | `04_stratified_analysis.py` | Simulation confirms 9/10 real |
+| 5 | ~~MAJOR~~ FIXED | ~~No statistical tests for Q1-Q4~~ | `04_stratified_analysis.py` | Fixed: Mann-Whitney + Cliff's delta |
+| 6 | ~~MAJOR~~ FIXED | ~~Multiple testing uncorrected~~ | Multiple scripts | BH correction + exploratory label |
+| 7 | ~~MODERATE~~ FIXED | ~~Nominal weights for ordinal data~~ | `02_vote_agreement.py` | Fixed: ordinal + nominal reported |
 | 8 | MODERATE | value_domain includes 0 | `03_eval_agreement.py` | Alpha deflated |
 | 9 | MODERATE | No clustering accounted for | `05_correlation_analysis.py` | Standard errors too small |
 | 10 | MODERATE | Small subgroup AC1 | `06/07_*_analysis.py` | Unreliable subgroup conclusions |
 | 11 | MINOR | Missing data mechanism | Paper draft | Possible selection bias |
-| 12 | MINOR | Overclaimed novelty | Paper draft | Weakened by circularity |
+| 12 | ~~MINOR~~ ADDRESSED | ~~Overclaimed novelty~~ | Paper draft | Simulation supports claim |
 
 ## Recommended Fix Priority
 

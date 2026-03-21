@@ -164,8 +164,52 @@ def create_figure_v2_hexbin(metrics_df: pd.DataFrame, corr: dict) -> plt.Figure:
     return fig
 
 
-def create_figure_v3_by_dimension(metrics_df: pd.DataFrame) -> plt.Figure:
-    """Create correlation matrix of all dimensions' mean vs std."""
+def compute_per_dimension_correlations(metrics_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute Spearman correlations between mean and std per dimension,
+    with Benjamini-Hochberg correction for 10 tests.
+
+    Returns:
+        DataFrame with r, p, p_adjusted per dimension
+    """
+    results = []
+    for domain in EVAL_COLS:
+        dim_name = domain.replace('Eval ', '')
+        mean_col = f'{dim_name}_mean'
+        std_col = f'{dim_name}_std'
+
+        if mean_col in metrics_df.columns and std_col in metrics_df.columns:
+            clean = metrics_df[[mean_col, std_col]].dropna()
+            if len(clean) > 2:
+                r, p = stats.spearmanr(clean[mean_col], clean[std_col])
+                results.append({'dimension': dim_name, 'rho': r, 'p_value': p,
+                                'n': len(clean)})
+
+    results_df = pd.DataFrame(results)
+
+    if len(results_df) > 0:
+        # Benjamini-Hochberg correction
+        p_values = results_df['p_value'].values
+        n_tests = len(p_values)
+        sort_idx = np.argsort(p_values)
+        p_adjusted = np.empty(n_tests)
+        for rank, idx in enumerate(sort_idx):
+            p_adjusted[idx] = p_values[idx] * n_tests / (rank + 1)
+        # Enforce monotonicity (working backwards through sorted order)
+        for i in range(n_tests - 2, -1, -1):
+            idx = sort_idx[i]
+            next_idx = sort_idx[i + 1]
+            p_adjusted[idx] = min(p_adjusted[idx], p_adjusted[next_idx])
+        p_adjusted = np.minimum(p_adjusted, 1.0)
+        results_df['p_adjusted'] = p_adjusted
+        results_df['significant'] = results_df['p_adjusted'] < 0.05
+
+    return results_df
+
+
+def create_figure_v3_by_dimension(metrics_df: pd.DataFrame,
+                                  corr_df: pd.DataFrame) -> plt.Figure:
+    """Create small multiples of mean vs std per dimension with BH-corrected p-values."""
     setup_plotting()
 
     fig, axes = plt.subplots(2, 5, figsize=(16, 8))
@@ -184,16 +228,25 @@ def create_figure_v3_by_dimension(metrics_df: pd.DataFrame) -> plt.Figure:
                 ax.scatter(clean[mean_col], clean[std_col], alpha=0.5, s=20,
                           color=PALETTE[i % len(PALETTE)])
 
-                # Correlation
-                r, p = stats.pearsonr(clean[mean_col], clean[std_col])
-                ax.set_title(f'{dim_name[:15]}\nr={r:.2f}', fontsize=9)
+                # Get BH-corrected results
+                row = corr_df[corr_df['dimension'] == dim_name]
+                if len(row) > 0:
+                    rho = row['rho'].values[0]
+                    p_adj = row['p_adjusted'].values[0]
+                    sig = '*' if p_adj < 0.05 else ''
+                    ax.set_title(f'{dim_name[:15]}\n'
+                                 f'\u03c1={rho:.2f}, p_adj={p_adj:.3f}{sig}',
+                                 fontsize=8)
+                else:
+                    ax.set_title(f'{dim_name[:15]}\nNo data', fontsize=9)
             else:
                 ax.set_title(f'{dim_name[:15]}\nNo data', fontsize=9)
 
         ax.set_xlabel('Mean', fontsize=8)
         ax.set_ylabel('Std', fontsize=8)
 
-    plt.suptitle('Mean Score vs Variability per Dimension', y=1.02)
+    plt.suptitle('Mean Score vs Variability per Dimension\n'
+                 '(Spearman \u03c1, Benjamini-Hochberg corrected)', y=1.04)
     plt.tight_layout()
     return fig
 
@@ -282,11 +335,19 @@ def main():
     else:
         print(f"   Error: {corr['error']}")
 
+    # Per-dimension correlations with BH correction
+    print("\n5. Computing per-dimension correlations (BH-corrected)...")
+    dim_corr_df = compute_per_dimension_correlations(metrics_df)
+    for _, row in dim_corr_df.iterrows():
+        sig = '*' if row['significant'] else ''
+        print(f"   - {row['dimension']}: rho={row['rho']:.3f}, "
+              f"p_adj={row['p_adjusted']:.4f}{sig}")
+
     # Save tables
-    print("\n5. Saving tables...")
+    print("\n6. Saving tables...")
 
     if 'error' not in corr:
-        corr_df = pd.DataFrame([{
+        corr_summary_df = pd.DataFrame([{
             'metric': 'Pearson correlation (alignment vs std)',
             'value': corr['pearson_r'],
             'p_value': corr['pearson_p'],
@@ -301,13 +362,14 @@ def main():
             'ci_upper': np.nan,
             'interpretation': ''
         }])
-        corr_df.to_csv(TABLES_DIR / '05_correlation_analysis.csv', index=False)
+        corr_summary_df.to_csv(TABLES_DIR / '05_correlation_analysis.csv', index=False)
 
     metrics_df.to_csv(TABLES_DIR / '05_correlation_metrics.csv', index=False)
+    dim_corr_df.to_csv(TABLES_DIR / '05_correlation_per_dimension.csv', index=False)
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n6. Creating figures...")
+    print("\n7. Creating figures...")
 
     if 'error' not in corr:
         fig1 = create_figure_v1_scatter(metrics_df, corr)
@@ -318,7 +380,7 @@ def main():
         save_figure_variants(fig2, '05_correlation_analysis', FIGURES_DIR, 2)
         print("   - Saved: Hexbin density (v2)")
 
-    fig3 = create_figure_v3_by_dimension(metrics_df)
+    fig3 = create_figure_v3_by_dimension(metrics_df, dim_corr_df)
     save_figure_variants(fig3, '05_correlation_analysis', FIGURES_DIR, 3)
     print("   - Saved: By dimension (v3)")
 
