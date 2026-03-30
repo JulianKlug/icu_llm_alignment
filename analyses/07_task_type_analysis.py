@@ -237,13 +237,11 @@ def create_figure_v1_grouped_bar(stats_df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-def create_figure_v2_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
-    """Create heatmap of Gwet's AC1 by task type x dimension."""
+def create_figure_v2_performance_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create heatmap of mean scores by task type x dimension."""
     setup_plotting()
 
-    pivot = stats_df.pivot(index='task_type', columns='dimension', values='gwet_ac1')
-
-    # Sort by overall mean AC1
+    pivot = stats_df.pivot(index='task_type', columns='dimension', values='mean')
     pivot['overall_mean'] = pivot.mean(axis=1)
     pivot = pivot.sort_values('overall_mean', ascending=False).drop('overall_mean', axis=1)
 
@@ -254,13 +252,13 @@ def create_figure_v2_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
         annot=True,
         fmt='.2f',
         cmap='RdYlGn',
-        vmin=0,
-        vmax=1,
+        vmin=1,
+        vmax=5,
         ax=ax,
-        cbar_kws={'label': "Gwet's AC1"}
+        cbar_kws={'label': 'Mean Score (1-5)'}
     )
 
-    ax.set_title("Interrater Agreement (Gwet's AC1): Task Type × Dimension")
+    ax.set_title('Performance by Task Type and Dimension (Mean Likert Score)')
     ax.set_xlabel('Evaluation Dimension')
     ax.set_ylabel('Task Type')
     plt.xticks(rotation=45, ha='right')
@@ -269,14 +267,12 @@ def create_figure_v2_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-def create_figure_v3_agreement_comparison(agreement_df: pd.DataFrame) -> plt.Figure:
-    """Create bar chart comparing Gwet's AC1 across task types."""
+def create_figure_v3_radar(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create radar chart comparing task type performance profiles."""
     setup_plotting()
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    # Sort by AC1
-    df_sorted = agreement_df.dropna(subset=['mean_gwet_ac1']).sort_values('mean_gwet_ac1', ascending=True)
+    task_types = stats_df.groupby('task_type')['n_ratings'].sum().sort_values(ascending=False).index.tolist()
+    dimensions = stats_df['dimension'].unique().tolist()
 
     task_colors = {
         'Diagnosis': COLORS['primary'],
@@ -286,61 +282,42 @@ def create_figure_v3_agreement_comparison(agreement_df: pd.DataFrame) -> plt.Fig
         'Other': COLORS['neutral']
     }
 
-    y_pos = np.arange(len(df_sorted))
-    colors = [task_colors.get(row['task_type'], COLORS['neutral']) for _, row in df_sorted.iterrows()]
+    n = len(dimensions)
+    angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
+    angles += angles[:1]
 
-    bars = ax.barh(y_pos, df_sorted['mean_gwet_ac1'], color=colors, alpha=0.8)
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
 
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels([f"{row['task_type']} (n={row['n_answers']})"
-                        for _, row in df_sorted.iterrows()])
-    ax.set_xlabel("Mean Gwet's AC1")
-    ax.set_title("Interrater Agreement by Task Type")
+    for task_type in task_types:
+        df_t = stats_df[stats_df['task_type'] == task_type]
+        values = [df_t[df_t['dimension'] == d]['mean'].values[0]
+                  if len(df_t[df_t['dimension'] == d]) > 0 else np.nan
+                  for d in dimensions]
+        values += values[:1]
+        color = task_colors.get(task_type, COLORS['neutral'])
+        ax.plot(angles, values, 'o-', linewidth=2, label=task_type,
+                color=color, markersize=5)
+        ax.fill(angles, values, alpha=0.05, color=color)
 
-    # Add interpretation lines
-    ax.axvline(x=0.4, color='gray', linestyle='--', alpha=0.7, label='Fair/Moderate')
-    ax.axvline(x=0.6, color='gray', linestyle='--', alpha=0.7, label='Moderate/Substantial')
-    ax.legend(loc='lower right')
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(dimensions, size=8)
+    ax.set_ylim(1, 5)
+    ax.set_yticks([2, 3, 4, 5])
 
-    ax.set_xlim(0, 1)
+    ref = [3] * (n + 1)
+    ax.plot(angles, ref, '--', linewidth=1, color=COLORS['neutral'], alpha=0.5)
 
-    # Add value labels
-    for bar, val in zip(bars, df_sorted['mean_gwet_ac1']):
-        ax.text(val + 0.02, bar.get_y() + bar.get_height()/2,
-                f'{val:.2f}', ha='left', va='center', fontsize=10)
+    ax.set_title('Performance Profiles by Task Type', y=1.12)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.35, 1.05), fontsize=9)
 
     plt.tight_layout()
     return fig
 
 
-def create_figure_v4_combined_metrics(stats_df: pd.DataFrame, agreement_df: pd.DataFrame) -> plt.Figure:
-    """Create combined figure showing both performance and agreement."""
+def create_figure_v4_overall_bar(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create horizontal bar chart of overall mean score per task type."""
     setup_plotting()
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
-
-    # Left: Mean score heatmap
-    pivot_score = stats_df.pivot(index='task_type', columns='dimension', values='mean')
-    pivot_score['overall_mean'] = pivot_score.mean(axis=1)
-    pivot_score = pivot_score.sort_values('overall_mean', ascending=False).drop('overall_mean', axis=1)
-
-    sns.heatmap(
-        pivot_score,
-        annot=True,
-        fmt='.2f',
-        cmap='RdYlGn',
-        vmin=1,
-        vmax=5,
-        ax=axes[0],
-        cbar_kws={'label': 'Mean Score'}
-    )
-    axes[0].set_title('Performance (Mean Score)')
-    axes[0].set_xlabel('Dimension')
-    axes[0].set_ylabel('Task Type')
-    plt.sca(axes[0])
-    plt.xticks(rotation=45, ha='right')
-
-    # Right: Agreement summary
     task_colors = {
         'Diagnosis': COLORS['primary'],
         'Prognosis': COLORS['secondary'],
@@ -349,24 +326,30 @@ def create_figure_v4_combined_metrics(stats_df: pd.DataFrame, agreement_df: pd.D
         'Other': COLORS['neutral']
     }
 
-    df_sorted = agreement_df.dropna(subset=['mean_gwet_ac1']).sort_values('mean_gwet_ac1', ascending=False)
+    overall = stats_df.groupby('task_type').agg(
+        mean=('mean', 'mean'),
+        std=('mean', 'std'),
+        n_answers=('n_answers', 'first')
+    ).sort_values('mean', ascending=True)
 
-    y_pos = np.arange(len(df_sorted))
-    colors = [task_colors.get(row['task_type'], COLORS['neutral']) for _, row in df_sorted.iterrows()]
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-    bars = axes[1].barh(y_pos, df_sorted['mean_gwet_ac1'], color=colors, alpha=0.8)
-    axes[1].set_yticks(y_pos)
-    axes[1].set_yticklabels([f"{row['task_type']}" for _, row in df_sorted.iterrows()])
-    axes[1].set_xlabel("Gwet's AC1")
-    axes[1].set_title("Interrater Agreement")
-    axes[1].axvline(x=0.4, color='gray', linestyle='--', alpha=0.5)
-    axes[1].axvline(x=0.6, color='gray', linestyle='--', alpha=0.5)
-    axes[1].set_xlim(0, 1)
+    y = np.arange(len(overall))
+    colors = [task_colors.get(idx, COLORS['neutral']) for idx in overall.index]
+    bars = ax.barh(y, overall['mean'], xerr=overall['std'], capsize=4,
+                   color=colors, alpha=0.85)
 
-    # Add value labels
-    for bar, val in zip(bars, df_sorted['mean_gwet_ac1']):
-        axes[1].text(val + 0.02, bar.get_y() + bar.get_height()/2,
-                     f'{val:.2f}', ha='left', va='center', fontsize=10)
+    for i, (idx, row) in enumerate(overall.iterrows()):
+        ax.text(row['mean'] + row['std'] + 0.05, i,
+                f"{row['mean']:.2f} (n={int(row['n_answers'])})",
+                va='center', fontsize=9)
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(overall.index)
+    ax.set_xlabel('Mean Score Across All Dimensions (1-5)')
+    ax.set_title('Overall Performance by Task Type (Mean ± SD)')
+    ax.set_xlim(1, 5)
+    ax.axvline(x=3, color=COLORS['neutral'], linestyle='--', alpha=0.5)
 
     plt.tight_layout()
     return fig
@@ -416,33 +399,46 @@ def main():
         if not np.isnan(ac1):
             print(f"   - {row['task_type']}: AC1={ac1:.3f} ({row['interpretation']})")
 
+    # Create performance summary table
+    print("\n6. Creating performance summary...")
+    perf_summary = stats_df.pivot(index='task_type', columns='dimension', values='mean')
+    perf_summary['Overall Mean'] = perf_summary.mean(axis=1)
+    perf_summary['n_answers'] = stats_df.groupby('task_type')['n_answers'].first().values
+    perf_summary = perf_summary.sort_values('n_answers', ascending=False)
+    perf_summary = perf_summary.round(2)
+
+    print("\n   Performance by task type (overall mean):")
+    for idx, row in perf_summary.iterrows():
+        print(f"   - {idx}: {row['Overall Mean']:.2f} (n={int(row['n_answers'])})")
+
     # Save tables
-    print("\n6. Saving tables...")
+    print("\n7. Saving tables...")
     stats_df.to_csv(TABLES_DIR / '07_task_type_analysis.csv', index=False)
     agreement_df.to_csv(TABLES_DIR / '07_task_type_agreement.csv', index=False)
+    perf_summary.to_csv(TABLES_DIR / '07_task_type_performance_summary.csv')
 
     classification_df = all_answers_df[['Answer', 'Question', 'task_type']].drop_duplicates()
     classification_df.to_csv(TABLES_DIR / '07_task_type_classification.csv', index=False)
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n7. Creating figures...")
+    print("\n8. Creating figures...")
 
     fig1 = create_figure_v1_grouped_bar(stats_df)
     save_figure_variants(fig1, '07_task_type_analysis', FIGURES_DIR, 1)
     print("   - Saved: Grouped bar chart (v1)")
 
-    fig2 = create_figure_v2_heatmap(stats_df)
+    fig2 = create_figure_v2_performance_heatmap(stats_df)
     save_figure_variants(fig2, '07_task_type_analysis', FIGURES_DIR, 2)
-    print("   - Saved: Agreement heatmap (v2)")
+    print("   - Saved: Performance heatmap (v2)")
 
-    fig3 = create_figure_v3_agreement_comparison(agreement_df)
+    fig3 = create_figure_v3_radar(stats_df)
     save_figure_variants(fig3, '07_task_type_analysis', FIGURES_DIR, 3)
-    print("   - Saved: Agreement comparison (v3)")
+    print("   - Saved: Radar chart (v3)")
 
-    fig4 = create_figure_v4_combined_metrics(stats_df, agreement_df)
+    fig4 = create_figure_v4_overall_bar(stats_df)
     save_figure_variants(fig4, '07_task_type_analysis', FIGURES_DIR, 4)
-    print("   - Saved: Combined metrics (v4)")
+    print("   - Saved: Overall performance bar (v4)")
 
     # Summary
     print("\n" + "=" * 60)

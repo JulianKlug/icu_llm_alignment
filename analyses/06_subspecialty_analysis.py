@@ -229,30 +229,28 @@ def create_figure_v1_grouped_bar(stats_df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-def create_figure_v2_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
-    """Create heatmap of Gwet's AC1 by subspecialty x dimension."""
+def create_figure_v2_performance_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create heatmap of mean scores by subspecialty x dimension."""
     setup_plotting()
 
-    pivot = stats_df.pivot(index='subspecialty', columns='dimension', values='gwet_ac1')
-
-    # Sort by overall mean AC1
+    pivot = stats_df.pivot(index='subspecialty', columns='dimension', values='mean')
     pivot['overall_mean'] = pivot.mean(axis=1)
     pivot = pivot.sort_values('overall_mean', ascending=False).drop('overall_mean', axis=1)
 
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=(14, 8))
 
     sns.heatmap(
         pivot,
         annot=True,
         fmt='.2f',
         cmap='RdYlGn',
-        vmin=0,
-        vmax=1,
+        vmin=1,
+        vmax=5,
         ax=ax,
-        cbar_kws={'label': "Gwet's AC1"}
+        cbar_kws={'label': 'Mean Score (1-5)'}
     )
 
-    ax.set_title("Interrater Agreement (Gwet's AC1): Subspecialty × Dimension")
+    ax.set_title('Performance by Subspecialty and Dimension (Mean Likert Score)')
     ax.set_xlabel('Evaluation Dimension')
     ax.set_ylabel('Subspecialty')
     plt.xticks(rotation=45, ha='right')
@@ -261,85 +259,72 @@ def create_figure_v2_heatmap(stats_df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-def create_figure_v3_agreement_comparison(agreement_df: pd.DataFrame) -> plt.Figure:
-    """Create bar chart comparing Gwet's AC1 across subspecialties."""
+def create_figure_v3_radar(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create radar chart comparing subspecialty performance profiles."""
     setup_plotting()
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    subspecialties = stats_df.groupby('subspecialty')['n_ratings'].sum().sort_values(ascending=False).index.tolist()
+    dimensions = stats_df['dimension'].unique().tolist()
 
-    # Sort by AC1
-    df_sorted = agreement_df.dropna(subset=['mean_gwet_ac1']).sort_values('mean_gwet_ac1', ascending=True)
+    n = len(dimensions)
+    angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
+    angles += angles[:1]
 
-    y_pos = np.arange(len(df_sorted))
-    colors = [COLORS['quaternary'] if v < 0.4 else COLORS['tertiary'] if v < 0.6 else COLORS['success']
-              for v in df_sorted['mean_gwet_ac1']]
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
 
-    bars = ax.barh(y_pos, df_sorted['mean_gwet_ac1'], color=colors, alpha=0.8)
+    for i, subspec in enumerate(subspecialties):
+        df_sub = stats_df[stats_df['subspecialty'] == subspec]
+        values = [df_sub[df_sub['dimension'] == d]['mean'].values[0]
+                  if len(df_sub[df_sub['dimension'] == d]) > 0 else np.nan
+                  for d in dimensions]
+        values += values[:1]
+        ax.plot(angles, values, 'o-', linewidth=2, label=subspec,
+                color=PALETTE[i % len(PALETTE)], markersize=5)
+        ax.fill(angles, values, alpha=0.05, color=PALETTE[i % len(PALETTE)])
 
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels([f"{row['subspecialty']} (n={row['n_answers']})"
-                        for _, row in df_sorted.iterrows()])
-    ax.set_xlabel("Mean Gwet's AC1")
-    ax.set_title("Interrater Agreement by Subspecialty")
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(dimensions, size=8)
+    ax.set_ylim(1, 5)
+    ax.set_yticks([2, 3, 4, 5])
 
-    # Add interpretation lines
-    ax.axvline(x=0.4, color=COLORS['tertiary'], linestyle='--', alpha=0.7, label='Fair/Moderate')
-    ax.axvline(x=0.6, color=COLORS['success'], linestyle='--', alpha=0.7, label='Moderate/Substantial')
-    ax.legend(loc='lower right')
+    ref = [3] * (n + 1)
+    ax.plot(angles, ref, '--', linewidth=1, color=COLORS['neutral'], alpha=0.5)
 
-    ax.set_xlim(0, 1)
+    ax.set_title('Performance Profiles by Subspecialty', y=1.12)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.35, 1.05), fontsize=9)
 
     plt.tight_layout()
     return fig
 
 
-def create_figure_v4_combined_metrics(stats_df: pd.DataFrame, agreement_df: pd.DataFrame) -> plt.Figure:
-    """Create combined figure showing both performance and agreement."""
+def create_figure_v4_overall_bar(stats_df: pd.DataFrame) -> plt.Figure:
+    """Create horizontal bar chart of overall mean score per subspecialty."""
     setup_plotting()
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 8))
+    overall = stats_df.groupby('subspecialty').agg(
+        mean=('mean', 'mean'),
+        std=('mean', 'std'),
+        n_answers=('n_answers', 'first')
+    ).sort_values('mean', ascending=True)
 
-    # Left: Mean score heatmap
-    pivot_score = stats_df.pivot(index='subspecialty', columns='dimension', values='mean')
-    pivot_score['overall_mean'] = pivot_score.mean(axis=1)
-    pivot_score = pivot_score.sort_values('overall_mean', ascending=False).drop('overall_mean', axis=1)
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    sns.heatmap(
-        pivot_score,
-        annot=True,
-        fmt='.2f',
-        cmap='RdYlGn',
-        vmin=1,
-        vmax=5,
-        ax=axes[0],
-        cbar_kws={'label': 'Mean Score'}
-    )
-    axes[0].set_title('Performance (Mean Score)')
-    axes[0].set_xlabel('Dimension')
-    axes[0].set_ylabel('Subspecialty')
-    plt.sca(axes[0])
-    plt.xticks(rotation=45, ha='right')
+    y = np.arange(len(overall))
+    bars = ax.barh(y, overall['mean'], xerr=overall['std'], capsize=4,
+                   color=[PALETTE[i % len(PALETTE)] for i in range(len(overall))],
+                   alpha=0.85)
 
-    # Right: Agreement summary
-    df_sorted = agreement_df.dropna(subset=['mean_gwet_ac1']).sort_values('mean_gwet_ac1', ascending=False)
+    for i, (idx, row) in enumerate(overall.iterrows()):
+        ax.text(row['mean'] + row['std'] + 0.05, i,
+                f"{row['mean']:.2f} (n={int(row['n_answers'])})",
+                va='center', fontsize=9)
 
-    y_pos = np.arange(len(df_sorted))
-    colors = [COLORS['quaternary'] if v < 0.4 else COLORS['tertiary'] if v < 0.6 else COLORS['success']
-              for v in df_sorted['mean_gwet_ac1']]
-
-    bars = axes[1].barh(y_pos, df_sorted['mean_gwet_ac1'], color=colors, alpha=0.8)
-    axes[1].set_yticks(y_pos)
-    axes[1].set_yticklabels([f"{row['subspecialty']}" for _, row in df_sorted.iterrows()])
-    axes[1].set_xlabel("Gwet's AC1")
-    axes[1].set_title("Interrater Agreement")
-    axes[1].axvline(x=0.4, color='gray', linestyle='--', alpha=0.5)
-    axes[1].axvline(x=0.6, color='gray', linestyle='--', alpha=0.5)
-    axes[1].set_xlim(0, 1)
-
-    # Add value labels
-    for bar, val in zip(bars, df_sorted['mean_gwet_ac1']):
-        axes[1].text(val + 0.02, bar.get_y() + bar.get_height()/2,
-                     f'{val:.2f}', ha='left', va='center', fontsize=9)
+    ax.set_yticks(y)
+    ax.set_yticklabels(overall.index)
+    ax.set_xlabel('Mean Score Across All Dimensions (1-5)')
+    ax.set_title('Overall Performance by Subspecialty (Mean ± SD)')
+    ax.set_xlim(1, 5)
+    ax.axvline(x=3, color=COLORS['neutral'], linestyle='--', alpha=0.5)
 
     plt.tight_layout()
     return fig
@@ -389,33 +374,46 @@ def main():
         if not np.isnan(ac1):
             print(f"   - {row['subspecialty']}: AC1={ac1:.3f} ({row['interpretation']})")
 
+    # Create performance summary table
+    print("\n6. Creating performance summary...")
+    perf_summary = stats_df.pivot(index='subspecialty', columns='dimension', values='mean')
+    perf_summary['Overall Mean'] = perf_summary.mean(axis=1)
+    perf_summary['n_answers'] = stats_df.groupby('subspecialty')['n_answers'].first().values
+    perf_summary = perf_summary.sort_values('n_answers', ascending=False)
+    perf_summary = perf_summary.round(2)
+
+    print("\n   Performance by subspecialty (overall mean):")
+    for idx, row in perf_summary.iterrows():
+        print(f"   - {idx}: {row['Overall Mean']:.2f} (n={int(row['n_answers'])})")
+
     # Save tables
-    print("\n6. Saving tables...")
+    print("\n7. Saving tables...")
     stats_df.to_csv(TABLES_DIR / '06_subspecialty_analysis.csv', index=False)
     agreement_df.to_csv(TABLES_DIR / '06_subspecialty_agreement.csv', index=False)
+    perf_summary.to_csv(TABLES_DIR / '06_subspecialty_performance_summary.csv')
 
     classification_df = all_answers_df[['Answer', 'Question', 'subspecialty']].drop_duplicates()
     classification_df.to_csv(TABLES_DIR / '06_subspecialty_classification.csv', index=False)
     print(f"   Saved to: {TABLES_DIR}")
 
     # Create figures
-    print("\n7. Creating figures...")
+    print("\n8. Creating figures...")
 
     fig1 = create_figure_v1_grouped_bar(stats_df)
     save_figure_variants(fig1, '06_subspecialty_analysis', FIGURES_DIR, 1)
     print("   - Saved: Grouped bar chart (v1)")
 
-    fig2 = create_figure_v2_heatmap(stats_df)
+    fig2 = create_figure_v2_performance_heatmap(stats_df)
     save_figure_variants(fig2, '06_subspecialty_analysis', FIGURES_DIR, 2)
-    print("   - Saved: Agreement heatmap (v2)")
+    print("   - Saved: Performance heatmap (v2)")
 
-    fig3 = create_figure_v3_agreement_comparison(agreement_df)
+    fig3 = create_figure_v3_radar(stats_df)
     save_figure_variants(fig3, '06_subspecialty_analysis', FIGURES_DIR, 3)
-    print("   - Saved: Agreement comparison (v3)")
+    print("   - Saved: Radar chart (v3)")
 
-    fig4 = create_figure_v4_combined_metrics(stats_df, agreement_df)
+    fig4 = create_figure_v4_overall_bar(stats_df)
     save_figure_variants(fig4, '06_subspecialty_analysis', FIGURES_DIR, 4)
-    print("   - Saved: Combined metrics (v4)")
+    print("   - Saved: Overall performance bar (v4)")
 
     # Summary
     print("\n" + "=" * 60)
