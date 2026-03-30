@@ -205,6 +205,42 @@ def bootstrap_ci(
     return point_estimate, ci_lower, ci_upper
 
 
+def benjamini_hochberg(p_values: np.ndarray) -> np.ndarray:
+    """
+    Apply Benjamini-Hochberg FDR correction to an array of p-values.
+
+    Args:
+        p_values: Array of uncorrected p-values
+
+    Returns:
+        Array of BH-adjusted p-values (same order as input)
+    """
+    p_values = np.asarray(p_values, dtype=float)
+    n = len(p_values)
+    if n == 0:
+        return p_values
+
+    # Sort p-values and track original indices
+    sort_idx = np.argsort(p_values)
+    sorted_p = p_values[sort_idx]
+
+    # BH formula: p_adj[i] = p[i] * n / (rank), where rank is 1-based
+    adjusted = sorted_p * n / np.arange(1, n + 1)
+
+    # Enforce monotonicity (walking backwards through sorted order)
+    for i in range(n - 2, -1, -1):
+        adjusted[i] = min(adjusted[i], adjusted[i + 1])
+
+    # Cap at 1.0
+    adjusted = np.minimum(adjusted, 1.0)
+
+    # Restore original order
+    result = np.empty(n)
+    result[sort_idx] = adjusted
+
+    return result
+
+
 def interpret_kappa(kappa: float) -> str:
     """
     Interpret Kappa value according to Landis & Koch (1977).

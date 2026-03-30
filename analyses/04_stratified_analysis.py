@@ -31,7 +31,7 @@ from scipy.stats import mannwhitneyu
 from analyses.utils import (
     load_data, create_concatenated_answers_df,
     setup_plotting, save_figure_variants, COLORS, PALETTE,
-    DIMENSION_NAMES, EVAL_COLS
+    DIMENSION_NAMES, EVAL_COLS, benjamini_hochberg
 )
 
 OUTPUT_DIR = project_root / 'output'
@@ -175,16 +175,7 @@ def test_q1_vs_q4(answer_stats_df: pd.DataFrame) -> pd.DataFrame:
 
     # Benjamini-Hochberg correction
     if len(results_df) > 0:
-        p_values = results_df['p_value'].values
-        n_tests = len(p_values)
-        ranked = np.argsort(p_values)
-        p_adjusted = np.empty(n_tests)
-        for i, rank_idx in enumerate(np.argsort(ranked)):
-            p_adjusted[rank_idx] = p_values[rank_idx] * n_tests / (rank_idx + 1)
-        # Enforce monotonicity and cap at 1.0
-        p_adjusted = np.minimum.accumulate(p_adjusted[::-1])[::-1]
-        p_adjusted = np.minimum(p_adjusted, 1.0)
-        results_df['p_adjusted'] = p_adjusted
+        results_df['p_adjusted'] = benjamini_hochberg(results_df['p_value'].values)
         results_df['significant'] = results_df['p_adjusted'] < 0.05
 
     return results_df

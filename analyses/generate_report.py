@@ -60,7 +60,9 @@ def add_toc_page(pdf: PdfPages):
         '7. Analysis 4: Alignment vs Agreement Correlation',
         '8. Analysis 5: Performance by Subspecialty',
         '9. Analysis 6: Performance by Task Type',
-        '10. Conclusions'
+        '10. Analysis 7: Cross-specialty Comparison',
+        '11. Analysis 8: Clinical Error Analysis',
+        '12. Conclusions'
     ]
 
     for i, item in enumerate(toc_items):
@@ -318,8 +320,28 @@ def main():
             if fig_path.exists():
                 add_figure_page(pdf, f'Analysis 6: Task Type Analysis (Figure {v})', fig_path)
 
+        # Analysis 7: Cross-specialty Comparison
+        print("12. Adding Analysis 7: Cross-specialty Comparison...")
+        add_table_page(pdf, 'Analysis 7: ICU vs Nuclear Medicine Comparison',
+                       TABLES_DIR / '08_cross_specialty_comparison.csv')
+        for v in range(1, 5):
+            fig_path = FIGURES_DIR / f'08_cross_specialty_comparison_v{v}.png'
+            if fig_path.exists():
+                add_figure_page(pdf, f'Analysis 7: Cross-specialty Comparison (Figure {v})', fig_path)
+
+        # Analysis 8: Clinical Error Analysis
+        print("13. Adding Analysis 8: Clinical Error Analysis...")
+        add_table_page(pdf, 'Analysis 8: Tail Risk Distribution',
+                       TABLES_DIR / '09_tail_risk_distribution.csv')
+        add_table_page(pdf, 'Analysis 8: Error Category Summary',
+                       TABLES_DIR / '09_error_category_summary.csv')
+        for v in range(1, 5):
+            fig_path = FIGURES_DIR / f'09_clinical_error_analysis_v{v}.png'
+            if fig_path.exists():
+                add_figure_page(pdf, f'Analysis 8: Clinical Error Analysis (Figure {v})', fig_path)
+
         # Conclusions
-        print("12. Adding conclusions...")
+        print("14. Adding conclusions...")
         conclusions = [
             '## Summary',
             'This comprehensive analysis evaluated Meditron LLM performance across',

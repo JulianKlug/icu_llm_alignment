@@ -29,7 +29,8 @@ from scipy import stats
 
 from analyses.utils import (
     load_data, create_concatenated_answers_df,
-    setup_plotting, save_figure_variants, COLORS, PALETTE, EVAL_COLS
+    setup_plotting, save_figure_variants, COLORS, PALETTE, EVAL_COLS,
+    benjamini_hochberg
 )
 
 OUTPUT_DIR = project_root / 'output'
@@ -244,19 +245,7 @@ def compute_per_dimension_correlations(metrics_df: pd.DataFrame) -> pd.DataFrame
 
     if len(results_df) > 0:
         # Benjamini-Hochberg correction
-        p_values = results_df['p_value'].values
-        n_tests = len(p_values)
-        sort_idx = np.argsort(p_values)
-        p_adjusted = np.empty(n_tests)
-        for rank, idx in enumerate(sort_idx):
-            p_adjusted[idx] = p_values[idx] * n_tests / (rank + 1)
-        # Enforce monotonicity (working backwards through sorted order)
-        for i in range(n_tests - 2, -1, -1):
-            idx = sort_idx[i]
-            next_idx = sort_idx[i + 1]
-            p_adjusted[idx] = min(p_adjusted[idx], p_adjusted[next_idx])
-        p_adjusted = np.minimum(p_adjusted, 1.0)
-        results_df['p_adjusted'] = p_adjusted
+        results_df['p_adjusted'] = benjamini_hochberg(results_df['p_value'].values)
         results_df['significant'] = results_df['p_adjusted'] < 0.05
 
     return results_df
